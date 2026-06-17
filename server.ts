@@ -20,7 +20,8 @@ dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.NODE_ENV === "production" ? 3000 : 3001;
+  const isDev = process.argv.includes("--dev");
+  const PORT = isDev ? 3001 : process.env.PORT || 3000;
 
   // Middlewares
   app.use(cors());
@@ -50,7 +51,7 @@ async function startServer() {
   app.use(globalErrorHandler);
 
   // Serve static files in production
-  if (process.env.NODE_ENV === "production") {
+  if (!isDev) {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
