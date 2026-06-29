@@ -1,10 +1,9 @@
-import { useParams, Link, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Star, MapPin, Clock, Calendar, GraduationCap, Award, BookOpen, MessageSquare, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
-import { doctors as initialDoctors } from "@/src/data/doctors";
+import { ArrowLeft, Award, BookOpen, Calendar, Clock, GraduationCap, Loader2, MapPin, Star } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 export function DoctorProfile() {
   const { id } = useParams<{ id: string }>();
@@ -20,22 +19,11 @@ export function DoctorProfile() {
           const data = await response.json();
           setDoctor(data);
         } else {
-          // Fallback for static IDs if API fails
-          const staticDoc = initialDoctors.find((d) => d.id === Number(id));
-          if (staticDoc) {
-            setDoctor(staticDoc);
-          } else {
-            setError(true);
-          }
+          setError(true);
         }
       } catch (err) {
         console.error("Error fetching doctor:", err);
-        const staticDoc = initialDoctors.find((d) => d.id === Number(id));
-        if (staticDoc) {
-          setDoctor(staticDoc);
-        } else {
-          setError(true);
-        }
+        setError(true);
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +41,7 @@ export function DoctorProfile() {
     );
   }
 
-  if (error || !doctor) {
+  if (error || !doctor || doctor.status === "BANNED") {
     return <Navigate to="/doctors" replace />;
   }
 
@@ -77,21 +65,15 @@ export function DoctorProfile() {
                 <div className="h-32 bg-gradient-to-r from-primary to-secondary"></div>
                 <div className="px-6 pb-6 relative">
                   <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-slate-100 absolute -top-16 left-6 shadow-lg">
-                    <img src={doctor.image} alt={doctor.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img src={doctor.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=e2e8f0&color=64748b&size=400`} alt={doctor.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                   <div className="pt-20">
                     <h1 className="text-2xl font-bold text-slate-900 mb-1">{doctor.name}</h1>
                     <p className="text-primary font-medium mb-4">{doctor.specialty}</p>
                     
                     <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold text-slate-900">{doctor.rating}</span>
-                      <span>({doctor.reviews} reviews)</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
                       <Clock className="w-4 h-4 text-slate-400" />
-                      <span>{doctor.experience} Experience</span>
+                      <span>{doctor.experience} Years Experience</span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-sm text-slate-600 mb-6">
@@ -100,10 +82,16 @@ export function DoctorProfile() {
                     </div>
 
                     <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
-                      <div className="flex items-center gap-2 text-sm text-slate-700">
+                      <div className="flex items-center gap-2 text-sm text-slate-700 mb-2">
                         <Calendar className="w-4 h-4 text-primary" />
                         <span className="font-medium">Available:</span> {doctor.availability}
                       </div>
+                      {doctor.opdTiming && (
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <Clock className="w-4 h-4 text-primary" />
+                          <span className="font-medium">Timing:</span> {doctor.opdTiming}
+                        </div>
+                      )}
                     </div>
 
                     <Link to={`/book?doctor=${doctor._id || doctor.id}`} className="block w-full">
@@ -119,20 +107,22 @@ export function DoctorProfile() {
 
           {/* Right Column: Details */}
           <div className="lg:col-span-2 space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="border-none shadow-md">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">About {doctor.name}</h2>
-                  <p className="text-slate-700 leading-relaxed">
-                    {doctor.bio || doctor.about}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+            {(doctor.bio || doctor.about) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Card className="border-none shadow-md">
+                  <CardContent className="p-8">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4">About {doctor.name}</h2>
+                    <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                      {doctor.bio || doctor.about}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
             {doctor.education && (
               <motion.div
@@ -265,35 +255,6 @@ export function DoctorProfile() {
               </motion.div>
             )}
 
-            {doctor.testimonials && doctor.testimonials.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <Card className="border-none shadow-md">
-                  <CardContent className="p-8">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                      <MessageSquare className="w-6 h-6 text-primary" />
-                      Patient Testimonials
-                    </h2>
-                    <div className="grid gap-6">
-                      {doctor.testimonials.map((testimonial: any, index: number) => (
-                        <div key={index} className="bg-slate-50 rounded-xl p-6 border border-slate-100">
-                          <div className="flex gap-1 text-yellow-400 mb-3">
-                            {[...Array(testimonial.rating)].map((_, i) => (
-                              <Star key={i} className="w-4 h-4 fill-current" />
-                            ))}
-                          </div>
-                          <p className="text-slate-700 italic mb-4">"{testimonial.comment}"</p>
-                          <p className="text-sm font-semibold text-slate-900">- {testimonial.name}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
           </div>
         </div>
       </div>

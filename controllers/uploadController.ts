@@ -10,7 +10,8 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
     }
 
     const folder = req.body.folder || "lakecity-hospital/misc";
-    const result = await uploadImageToCloudinary(req.file.buffer, folder);
+    const mimetype = req.file.mimetype || "image/png";
+    const result = await uploadImageToCloudinary(req.file.buffer, folder, mimetype);
 
     res.status(200).json({
       success: true,

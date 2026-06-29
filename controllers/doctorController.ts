@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import Doctor, { IDoctor } from "../models/Doctor.js";
+import { NextFunction, Request, Response } from "express";
+import Doctor from "../models/Doctor.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
 
@@ -20,8 +20,13 @@ export const getDoctorById = catchAsync(async (req: Request, res: Response, next
 
 // Create a doctor
 export const createDoctor = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const doctor = await Doctor.create(req.body);
-  res.status(201).json(doctor);
+  try {
+    const doctor = await Doctor.create(req.body);
+    res.status(201).json(doctor);
+  } catch (error) {
+    console.error("Error creating doctor:", error);
+    next(error);
+  }
 });
 
 // Update a doctor

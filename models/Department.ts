@@ -5,13 +5,11 @@ export interface IDepartment extends Document {
   bannerImage?: string;
   headDoctor?: mongoose.Types.ObjectId;
   shortDescription?: string;
-  treatmentsList?: string[];
-  faq?: { question: string; answer: string }[];
   seoTitle?: string;
+  seoDescription?: string;
   seoKeywords?: string;
-  enquiryCount?: number;
   appointmentCount?: number;
-  isActive: boolean;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 const DepartmentSchema: Schema = new Schema({
@@ -19,13 +17,11 @@ const DepartmentSchema: Schema = new Schema({
   bannerImage: { type: String },
   headDoctor: { type: Schema.Types.ObjectId, ref: "Doctor" },
   shortDescription: { type: String },
-  treatmentsList: [{ type: String }],
-  faq: [{ question: String, answer: String }],
   seoTitle: { type: String },
+  seoDescription: { type: String },
   seoKeywords: { type: String },
-  enquiryCount: { type: Number, default: 0 },
   appointmentCount: { type: Number, default: 0 },
-  isActive: { type: Boolean, default: true },
+  status: { type: String, enum: ["ACTIVE", "INACTIVE"], default: "ACTIVE" },
 }, { timestamps: true });
 
 export default mongoose.model<IDepartment>("Department", DepartmentSchema);

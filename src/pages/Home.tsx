@@ -1,21 +1,67 @@
-import { motion } from "motion/react";
-import { Link } from "react-router-dom";
-import { 
-  HeartPulse, Activity, Brain, Bone, Stethoscope, 
-  Microscope, Phone, Calendar, ArrowRight, Star, 
-  ShieldCheck, Clock, Users, CheckCircle2, Baby
-} from "lucide-react";
+import { FAQSection } from "@/src/components/sections/FAQSection";
+import { MediaGallerySection } from "@/src/components/sections/MediaGallerySection";
+import { PatientJourney } from "@/src/components/sections/PatientJourney";
+import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
+import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
-import { PatientJourney } from "@/src/components/sections/PatientJourney";
-import { MediaGallerySection } from "@/src/components/sections/MediaGallerySection";
-import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
-import { FAQSection } from "@/src/components/sections/FAQSection";
-import { SEO } from "@/src/components/SEO";
 import { useSettings } from "@/src/contexts/SettingsContext";
+import {
+  Activity,
+  ArrowRight,
+  Baby,
+  BadgePlus,
+  Bone,
+  Brain,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Ear,
+  HeartPulse,
+  Microscope,
+  Phone,
+  ShieldAlert,
+  ShieldCheck,
+  Stethoscope,
+  Syringe,
+  Users
+} from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+const getDepartmentIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('plastic') || n.includes('reconstructive')) return { icon: BadgePlus, color: "text-pink-500", bg: "bg-pink-50" };
+  if (n.includes('paediatric') || n.includes('pediatric')) return { icon: Baby, color: "text-rose-500", bg: "bg-rose-50" };
+  if (n.includes('anaesthesia') || n.includes('anesthesia')) return { icon: Syringe, color: "text-teal-500", bg: "bg-teal-50" };
+  if (n.includes('onco') || n.includes('cancer')) return { icon: Microscope, color: "text-purple-500", bg: "bg-purple-50" };
+  if (n.includes('burn')) return { icon: ShieldAlert, color: "text-orange-600", bg: "bg-orange-50" };
+  if (n.includes('surg')) return { icon: Activity, color: "text-blue-500", bg: "bg-blue-50" };
+  if (n.includes('ortho') || n.includes('bone')) return { icon: Bone, color: "text-amber-500", bg: "bg-amber-50" };
+  if (n.includes('heart') || n.includes('cardio')) return { icon: HeartPulse, color: "text-red-500", bg: "bg-red-50" };
+  if (n.includes('neuro') || n.includes('brain')) return { icon: Brain, color: "text-indigo-500", bg: "bg-indigo-50" };
+  if (n.includes('ear') || n.includes('ent')) return { icon: Ear, color: "text-yellow-600", bg: "bg-yellow-50" };
+  return { icon: Stethoscope, color: "text-primary", bg: "bg-primary/10" };
+};
 
 export function Home() {
   const { settings } = useSettings();
+  const [departments, setDepartments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/departments')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDepartments(data.filter((d: any) => d.status === "ACTIVE"));
+        } else if (data && data.data && Array.isArray(data.data)) {
+          setDepartments(data.data.filter((d: any) => d.status === "ACTIVE"));
+        }
+      })
+      .catch(err => console.error("Error fetching departments:", err));
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -27,7 +73,7 @@ export function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden" aria-label="Hero">
+      <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" aria-label="Hero">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1551076805-e18690c5e561?q=80&w=2000&auto=format&fit=crop" 
@@ -39,80 +85,116 @@ export function Home() {
         </div>
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary-dark text-sm font-semibold mb-6">
-                Welcome to Lake City Caring Partners
-              </span>
-              <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6">
-                Advanced Care.<br />
-                <span className="text-secondary">Trusted Healing.</span>
-              </h1>
-              <p className="text-lg text-slate-700 mb-10 max-w-2xl leading-relaxed font-medium">
-                Experience world-class healthcare with state-of-the-art technology and compassionate experts in Bhopal. We partner with Ayushman Bharat and Smile Train to deliver accessible, high-quality care.
-              </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <Link to="/book" aria-label="Book an appointment" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md">
-                  <Button size="lg" className="gap-2 h-14 px-8 text-base shadow-xl shadow-primary/20">
-                    <Calendar className="h-5 w-5" aria-hidden="true" />
-                    Book Appointment
-                  </Button>
-                </Link>
-                <Button size="lg" variant="danger" className="gap-2 h-14 px-8 text-base shadow-xl shadow-danger/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger" aria-label="Call Emergency at 1066">
-                  <Phone className="h-5 w-5" aria-hidden="true" />
-                  Emergency (1066)
-                </Button>
-              </div>
-            </motion.div>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="max-w-3xl">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary-dark text-sm font-semibold mb-6">
+                  Welcome to Lake City Caring Partners
+                </span>
+                <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6">
+                  Advanced Care.<br />
+                  <span className="text-secondary">Trusted Healing.</span>
+                </h1>
+                <p className="text-lg text-slate-700 mb-10 max-w-2xl leading-relaxed font-medium">
+                  Experience world-class healthcare with state-of-the-art technology and compassionate experts in Bhopal. We partner with Ayushman Bharat and Smile Train to deliver accessible, high-quality care.
+                </p>
+                
+                <div className="flex flex-wrap gap-4">
+                  <Link to="/book" aria-label="Book an appointment" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md">
+                    <Button size="lg" className="gap-2 h-14 px-8 text-base shadow-xl shadow-primary/20">
+                      <Calendar className="h-5 w-5" aria-hidden="true" />
+                      Book Appointment
+                    </Button>
+                  </Link>
+                  <a href="tel:1066" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger rounded-md">
+                    <Button size="lg" variant="danger" className="gap-2 h-14 px-8 text-base shadow-xl shadow-danger/20" aria-label="Call Emergency at 1066">
+                      <Phone className="h-5 w-5" aria-hidden="true" />
+                      Emergency (1066)
+                    </Button>
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+            
+            {settings?.homeVideoUrl ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="w-full relative"
+              >
+                <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
+                  <iframe 
+                    className="w-full aspect-video"
+                    src={(() => {
+                      try {
+                        const url = new URL(settings.homeVideoUrl);
+                        const v = url.searchParams.get("v");
+                        if (v) return `https://www.youtube.com/embed/${v}`;
+                        return settings.homeVideoUrl;
+                      } catch {
+                        return settings.homeVideoUrl;
+                      }
+                    })()}
+                    title="Lake City Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </motion.div>
+            ) : null}
           </div>
         </div>
       </section>
 
       {/* Key Services */}
-      <section className="py-20 bg-slate-50" aria-labelledby="centers-of-excellence">
+      <section className="py-16 lg:py-24 bg-slate-50" aria-labelledby="centers-of-excellence">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 id="centers-of-excellence" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Centers of Excellence</h2>
-            <p className="text-slate-700 text-lg">Comprehensive care across specialized departments, equipped with the latest medical technology.</p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div className="max-w-3xl">
+              <h2 id="centers-of-excellence" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Centers of Excellence</h2>
+              <p className="text-slate-700 text-lg">Comprehensive care across specialized departments, equipped with the latest medical technology.</p>
+            </div>
+            <Link to="/departments" className="group inline-flex items-center gap-2 text-primary hover:text-primary-dark font-medium transition-colors shrink-0">
+              Explore All Departments 
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Microscope, title: "Cancer Care", desc: "Advanced pediatric and adult oncology", color: "text-purple-600", bg: "bg-purple-100" },
-              { icon: HeartPulse, title: "Cardiology", desc: "Advanced heart care and surgery", color: "text-red-600", bg: "bg-red-100" },
-              { icon: Activity, title: "Burn Care & ICU", desc: "Specialized burn treatments", color: "text-orange-600", bg: "bg-orange-100" },
-              { icon: Bone, title: "Orthopedics", desc: "Joint replacement and trauma care", color: "text-blue-600", bg: "bg-blue-100" },
-              { icon: Baby, title: "Women & Child Care", desc: "Comprehensive maternity and pediatrics", color: "text-pink-600", bg: "bg-pink-100" },
-              { icon: Activity, title: "Emergency", desc: "24/7 critical care support", color: "text-danger", bg: "bg-red-100" },
-            ].map((service, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <Link to={`/departments`} className="block h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl">
-                  <Card className="h-full border border-slate-200 hover:border-primary/20 shadow-sm hover:shadow-xl transition-all duration-300">
-                    <CardContent className="p-8 flex flex-col items-center text-center h-full text-slate-900">
-                      <div className={`w-16 h-16 rounded-2xl ${service.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`} aria-hidden="true">
-                        <service.icon className={`w-8 h-8 ${service.color}`} />
-                      </div>
-                      <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
-                      <p className="text-slate-600 text-sm mb-6 flex-grow">{service.desc}</p>
-                      <div className="mt-auto flex items-center justify-center text-primary-dark font-medium text-sm group-hover:gap-2 transition-all">
-                        Learn More <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all font-bold" aria-hidden="true" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+            {departments.length > 0 ? (
+              departments.slice(0, 4).map((dept, i) => {
+                const { icon: Icon, color, bg } = getDepartmentIcon(dept.name);
+                return (
+                  <motion.div
+                    key={dept._id || dept.id || i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <Link to={`/departments`} className="block h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl">
+                      <Card className="h-full border border-slate-200 hover:border-primary/20 shadow-sm hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-8 flex flex-col items-center text-center h-full text-slate-900 relative overflow-hidden">
+                          <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-50 transition-transform duration-500 group-hover:scale-150 ${bg}`} aria-hidden="true" />
+                          <div className={`relative z-10 w-16 h-16 rounded-2xl ${bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/50 shadow-sm`} aria-hidden="true">
+                            <Icon className={`w-8 h-8 ${color}`} />
+                          </div>
+                          <h3 className="relative z-10 text-xl font-semibold mb-3">{dept.name}</h3>
+                          <p className="relative z-10 text-slate-600 text-sm mb-6 flex-grow">{dept.shortDescription || "Specialized care and treatment."}</p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                );
+              })
+            ) : (
+              <p className="col-span-full text-center text-slate-500 py-10">Loading departments...</p>
+            )}
           </div>
         </div>
       </section>
@@ -162,29 +244,9 @@ export function Home() {
             </div>
 
             <div className="relative h-full min-h-[300px] lg:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-[#2b585f] flex flex-col gap-4">
-              {settings?.homeVideoUrl ? (
-                <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-white/10">
-                  <iframe 
-                    className="w-full aspect-video"
-                    src={(() => {
-                      try {
-                        const url = new URL(settings.homeVideoUrl);
-                        const v = url.searchParams.get("v");
-                        if (v) return `https://www.youtube.com/embed/${v}`;
-                        return settings.homeVideoUrl;
-                      } catch {
-                        return settings.homeVideoUrl;
-                      }
-                    })()}
-                    title="Lake City Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              ) : null}
               <div className="relative flex-grow min-h-[300px] rounded-2xl overflow-hidden">
                 <img 
-                  src={settings?.aboutUsImageUrl || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"} 
+                  src="https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=2070&auto=format&fit=crop" 
                   alt="Lake City Hospital Facilities" 
                   className="absolute inset-0 w-full h-full object-cover"
                   referrerPolicy="no-referrer"

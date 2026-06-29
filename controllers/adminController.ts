@@ -1,10 +1,8 @@
-import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import Admin from "../models/Admin.js";
-import AdminOTP from "../models/AdminOTP.js";
-import Setting from "../models/Setting.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
 
@@ -13,8 +11,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 // Helper to send email
 async function sendOTPEmail(email: string, code: string) {
   try {
-    const setting = await Setting.findOne();
-    const smtpConfig = setting?.smtpConfig;
+    const admin = await Admin.findOne();
+    const smtpConfig = admin?.smtpConfig;
 
     if (!smtpConfig || !smtpConfig.user || !smtpConfig.pass) {
       console.warn("SMTP credentials not configured in settings. Skipping email.");
@@ -69,8 +67,9 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
 
   // Generate OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  await AdminOTP.deleteMany({ email }); // Clear old codes
-  await AdminOTP.create({ email, code: otpCode });
+  admin.otpCode = otpCode;
+  admin.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  await admin.save();
 
   // Send Email
   const emailSent = await sendOTPEmail(email, otpCode);
@@ -89,18 +88,16 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
 export const verifyOTP = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, code } = req.body;
 
-  const otpRecord = await AdminOTP.findOne({ email, code });
-  if (!otpRecord) {
+  const admin = await Admin.findOne({ email, otpCode: code });
+  
+  if (!admin || !admin.otpExpiry || admin.otpExpiry < new Date()) {
     return next(new AppError("Invalid or expired code", 400));
   }
 
   // Success - clean up OTP
-  await AdminOTP.deleteOne({ _id: otpRecord._id });
-
-  const admin = await Admin.findOne({ email });
-  if (!admin) {
-     return next(new AppError("Admin not found", 404));
-  }
+  admin.otpCode = undefined;
+  admin.otpExpiry = undefined;
+  await admin.save();
 
   // Generate JWT
   const token = jwt.sign(
@@ -133,13 +130,13 @@ export const setupInitialAdmin = catchAsync(async (req: Request, res: Response, 
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  const admin = await Admin.create({ email, passwordHash });
-  
-  // If no settings exist, create a dummy one just so the app works better
-  let setting = await Setting.findOne();
-  if(!setting) {
-      await Setting.create({ hospitalName: "Lake City Hospital", contactNumbers: [], emails: [] });
-  }
+  const admin = await Admin.create({ 
+    email, 
+    passwordHash,
+    hospitalName: "Lake City Hospital",
+    contactNumbers: [],
+    emails: []
+  });
 
   res.status(201).json({ message: "Admin created successfully", admin: { email: admin.email } });
 });

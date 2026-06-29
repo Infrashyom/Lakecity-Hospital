@@ -1,6 +1,7 @@
 import { authFetch } from "@/src/lib/authFetch.js";
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/src/components/ui/Button";
+import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
 import {
   ImageIcon,
   FileText,
@@ -12,6 +13,8 @@ import {
   Home,
 } from "lucide-react";
 
+import { toast } from "sonner";
+
 export function MediaGalleryTab() {
   const [folders, setFolders] = useState([
     "Doctor Photos",
@@ -22,6 +25,7 @@ export function MediaGalleryTab() {
   const [media, setMedia] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ id: string; url: string } | null>(null);
 
   const fetchMedia = async () => {
     try {
@@ -61,39 +65,45 @@ export function MediaGalleryTab() {
     setIsUploading(true);
 
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(files[0]);
-      reader.onload = async () => {
-        const base64Image = reader.result as string;
+      const formData = new FormData();
+      formData.append("image", files[0]);
 
-        // Save to our backend
-        const saveResponse = await authFetch("/api/content", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "media",
-            title: files[0].name || "Uploaded Image",
-            image: base64Image,
-            category: activeFolder,
-          }),
-        });
+      const uploadRes = await authFetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-        if (saveResponse.ok) {
-          fetchMedia();
-          alert("Image uploaded successfully! (Saved as Base64)");
-        }
+      if (!uploadRes.ok) {
+        throw new Error("Cloudinary upload failed");
+      }
 
-        setIsUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      };
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        alert("Failed to upload image.");
-        setIsUploading(false);
-      };
+      const uploadData = await uploadRes.json();
+      const imageUrl = uploadData.data.url;
+
+      // Save to our backend
+      const saveResponse = await authFetch("/api/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "media",
+          title: files[0].name || "Uploaded Image",
+          image: imageUrl,
+          category: activeFolder,
+        }),
+      });
+
+      if (saveResponse.ok) {
+        fetchMedia();
+        toast.success("Image uploaded successfully.");
+      } else {
+        toast.error("Failed to save image record.");
+      }
+
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload image.");
+      toast.error("Failed to upload image.");
       setIsUploading(false);
     }
   };
@@ -112,8 +122,9 @@ export function MediaGalleryTab() {
     }
   };
 
-  const handleDelete = async (id: string, url: string) => {
-    if (!window.confirm("Remove this image?")) return;
+  const handleDelete = async () => {
+    if (!deleteConfirmTarget) return;
+    const { id } = deleteConfirmTarget;
     try {
       const response = await authFetch(`/api/content/${id}`, {
         method: "DELETE",
@@ -123,6 +134,8 @@ export function MediaGalleryTab() {
       }
     } catch (error) {
       console.error("Error deleting media", error);
+    } finally {
+      setDeleteConfirmTarget(null);
     }
   };
 
@@ -302,7 +315,7 @@ export function MediaGalleryTab() {
                       className="h-8 w-8 text-white border-none"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(file._id || file.id, file.image);
+                        setDeleteConfirmTarget({ id: file._id || file.id, url: file.image });
                       }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -314,6 +327,15 @@ export function MediaGalleryTab() {
           )}
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={!!deleteConfirmTarget}
+        title="Remove Image"
+        message="Are you sure you want to remove this image? This action cannot be undone."
+        confirmText="Remove"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteConfirmTarget(null)}
+      />
     </div>
   );
 }

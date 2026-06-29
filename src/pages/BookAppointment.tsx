@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Calendar, Clock, User, Phone, Mail, FileText, CheckCircle2, Loader2 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
-import { Button } from "@/src/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/src/components/ui/Card";
-import { Input } from "@/src/components/ui/Input";
-import { doctors as initialDoctors } from "@/src/data/doctors";
 import { SEO } from "@/src/components/SEO";
+import { Button } from "@/src/components/ui/Button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/Card";
+import { Input } from "@/src/components/ui/Input";
+import { Calendar, CheckCircle2, Clock, FileText, Loader2, Mail, Phone, User } from "lucide-react";
+import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export function BookAppointment() {
   const [searchParams] = useSearchParams();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [doctors, setDoctors] = useState<any[]>(initialDoctors);
+  const [doctors, setDoctors] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   
   // Form State
@@ -35,7 +34,7 @@ export function BookAppointment() {
         if (response.ok) {
           const data = await response.json();
           if (data && data.length > 0) {
-            setDoctors(data);
+            setDoctors(data.filter((doc: any) => doc.status !== "BANNED"));
           }
         }
       } catch (error) {
@@ -49,7 +48,13 @@ export function BookAppointment() {
         const response = await fetch("/api/departments");
         if (response.ok) {
           const data = await response.json();
-          setDepartments(data);
+          if (Array.isArray(data)) {
+            setDepartments(data.filter((d: any) => d.status === "ACTIVE"));
+          } else if (data && data.data && Array.isArray(data.data)) {
+            setDepartments(data.data.filter((d: any) => d.status === "ACTIVE"));
+          } else {
+            setDepartments(data);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch departments", error);

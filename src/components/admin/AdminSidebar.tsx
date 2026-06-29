@@ -9,7 +9,7 @@ import { useSettings } from "@/src/contexts/SettingsContext";
 
 export type AdminTab = 
   | "dashboard" | "appointments" | "doctors" | "departments" 
-  | "leads" | "content" | "reviews" | "media" | "tour" | "insurances" | "settings";
+  | "content" | "reviews" | "media" | "tour" | "insurances" | "settings";
 
 interface SidebarProps {
   activeTab: AdminTab;
@@ -25,7 +25,6 @@ const TABS = [
   { id: "doctors", label: "Doctors", icon: Users },
   { id: "departments", label: "Departments", icon: Building2 },
   { id: "insurances", label: "Insurances", icon: Shield },
-  { id: "leads", label: "Leads & Enquiries", icon: MessageSquare },
   { id: "content", label: "Blog Manager", icon: FileText },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "media", label: "Media Gallery", icon: ImageIcon },

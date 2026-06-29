@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/src/components/ui/Button";
+import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
 import { Plus, Edit, Trash2, MapPin, UploadCloud, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
 import { authFetch } from "@/src/lib/authFetch.js";
+import { toast } from "sonner";
 
 export function VirtualTourTab() {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -11,6 +13,7 @@ export function VirtualTourTab() {
   const [currentRoom, setCurrentRoom] = useState<any>({ name: "", description: "", image: "", hotspots: [] });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchRooms = async () => {
     try {
@@ -34,23 +37,25 @@ export function VirtualTourTab() {
     setIsUploading(true);
     
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(files[0]);
-      reader.onload = async () => {
-        const base64Image = reader.result as string;
-        setCurrentRoom(prev => ({...prev, image: base64Image}));
-        alert("Image uploaded successfully! (Saved as Base64)");
-        setIsUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      };
-      reader.onerror = error => {
-         console.error("Error reading file:", error);
-         alert("Failed to upload image.");
-         setIsUploading(false);
-      };
+      const formData = new FormData();
+      formData.append("image", files[0]);
+      
+      const uploadRes = await authFetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      const uploadData = await uploadRes.json();
+      setCurrentRoom((prev: any) => ({...prev, image: uploadData.data.url}));
+      toast.success("Image uploaded successfully!");
+      
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload image.");
+      toast.error("Failed to upload image.");
       setIsUploading(false);
     }
   };
@@ -70,18 +75,22 @@ export function VirtualTourTab() {
       });
       fetchRooms();
       setIsEditing(false);
+      toast.success("Room saved successfully.");
     } catch(err) {
-      alert("Failed to save room.");
+      toast.error("Failed to save room.");
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Remove this room from the tour?")) return;
+  const handleDelete = async () => {
+    if (!deleteConfirmId) return;
     try {
-      await authFetch(`/api/content/${id}`, { method: "DELETE" });
+      await authFetch(`/api/content/${deleteConfirmId}`, { method: "DELETE" });
       fetchRooms();
+      toast.success("Room deleted successfully.");
     } catch(err) {
-      alert("Failed to delete room.");
+      toast.error("Failed to delete room.");
+    } finally {
+      setDeleteConfirmId(null);
     }
   };
 
@@ -171,13 +180,22 @@ export function VirtualTourTab() {
                 <p className="text-sm text-slate-600 line-clamp-2">{room.description}</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => { setCurrentRoom(room); setIsEditing(true); }}><Edit className="w-4 h-4 mr-2" /> Edit</Button>
-                  <Button variant="danger" size="icon" onClick={() => handleDelete(room._id)}><Trash2 className="w-4 h-4" /></Button>
+                  <Button variant="danger" size="icon" onClick={() => setDeleteConfirmId(room._id)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+      
+      <ConfirmModal
+        isOpen={!!deleteConfirmId}
+        title="Delete Room"
+        message="Are you sure you want to remove this room from the tour?"
+        confirmText="Remove"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }

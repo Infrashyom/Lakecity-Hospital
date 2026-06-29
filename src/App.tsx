@@ -12,6 +12,8 @@ import { ScrollToTop } from "@/src/components/ScrollToTop";
 import { useAnalyticsTracker } from "@/src/hooks/useAnalyticsTracker";
 import { FloatingActionButtons } from "@/src/components/layout/FloatingActionButtons";
 
+import { Toaster } from "sonner";
+
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/src/pages/Home").then(module => ({ default: module.Home })));
 const BookAppointment = lazy(() => import("@/src/pages/BookAppointment").then(module => ({ default: module.BookAppointment })));
@@ -53,6 +55,7 @@ export default function App() {
   useAnalyticsTracker();
   return (
     <Router>
+      <Toaster position="top-center" richColors />
       <ScrollToTop />
       <Suspense fallback={<PageLoading />}>
         <Routes>

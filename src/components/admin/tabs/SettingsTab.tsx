@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Loader2, Save } from "lucide-react";
+import { ImageUpload } from "@/src/components/admin/ImageUpload";
+import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
-import { Button } from "@/src/components/ui/Button";
 import { authFetch } from "@/src/lib/authFetch";
-import { ImageUpload } from "@/src/components/admin/ImageUpload";
+import { Loader2, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useSettings } from "@/src/contexts/SettingsContext";
 
 export function SettingsTab() {
+  const { refreshSettings } = useSettings();
   const [formData, setFormData] = useState({
     hospitalName: "",
     logoUrl: "",
@@ -29,8 +32,11 @@ export function SettingsTab() {
   });
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [isSavingGeneral, setIsSavingGeneral] = useState(false);
+  const [isSavingIntegrations, setIsSavingIntegrations] = useState(false);
+  
+  const [editModeGeneral, setEditModeGeneral] = useState(false);
+  const [editModeIntegrations, setEditModeIntegrations] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -70,8 +76,10 @@ export function SettingsTab() {
     }
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  const handleSave = async (section: "general" | "integrations") => {
+    if (section === "general") setIsSavingGeneral(true);
+    else setIsSavingIntegrations(true);
+
     try {
       const payload = {
         ...formData,
@@ -81,20 +89,23 @@ export function SettingsTab() {
       };
 
       const res = await authFetch("/api/settings", {
-        method: "POST", // The settingController uses POST/PUT properly or we can check
+        method: "POST",
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert("Settings saved successfully!");
-        setEditMode(false);
+        toast.success("Settings saved successfully!");
+        if (section === "general") setEditModeGeneral(false);
+        else setEditModeIntegrations(false);
+        await refreshSettings();
       } else {
-        alert("Failed to save settings");
+        toast.error("Failed to save settings");
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving settings");
+      toast.error("Error saving settings");
     } finally {
-      setIsSaving(false);
+      if (section === "general") setIsSavingGeneral(false);
+      else setIsSavingIntegrations(false);
     }
   };
 
@@ -108,13 +119,13 @@ export function SettingsTab() {
           <Card className="border-none shadow-sm bg-white">
              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="font-bold text-slate-800">General Information</h3>
-                {editMode ? (
-                  <Button size="sm" onClick={handleSave} disabled={isSaving} className="gap-2">
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {editModeGeneral ? (
+                  <Button size="sm" onClick={() => handleSave("general")} disabled={isSavingGeneral} className="gap-2">
+                    {isSavingGeneral ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save
                   </Button>
                 ) : (
-                  <Button size="sm" onClick={() => setEditMode(true)} variant="outline" className="gap-2">
+                  <Button size="sm" onClick={() => setEditModeGeneral(true)} variant="outline" className="gap-2">
                     Edit
                   </Button>
                 )}
@@ -122,14 +133,14 @@ export function SettingsTab() {
              <div className="p-6 space-y-4">
                 <div>
                    <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Hospital Logo</label>
-                   {editMode ? (
+                   {editModeGeneral ? (
                      <ImageUpload 
                        value={formData.logoUrl} 
                        onChange={(url) => setFormData({...formData, logoUrl: url})} 
-                       label="Upload Logo (Cloudinary)" 
+                       label="Upload Logo" 
                      />
                    ) : (
-                     <div className="h-20 w-auto">
+                     <div className="h-20 w-auto bg-slate-50 border border-slate-100 rounded-md p-2 flex items-center justify-center">
                        {formData.logoUrl ? (
                          <img src={formData.logoUrl} alt="Logo" className="h-full object-contain" />
                        ) : (
@@ -140,14 +151,14 @@ export function SettingsTab() {
                 </div>
                 <div>
                    <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">About Us Image</label>
-                   {editMode ? (
+                   {editModeGeneral ? (
                      <ImageUpload 
                        value={formData.aboutUsImageUrl} 
                        onChange={(url) => setFormData({...formData, aboutUsImageUrl: url})} 
-                       label="Upload About Us Image (Cloudinary)" 
+                       label="Upload About Us Image" 
                      />
                    ) : (
-                     <div className="h-20 w-auto">
+                     <div className="h-20 w-auto bg-slate-50 border border-slate-100 rounded-md p-2 flex items-center justify-center">
                        {formData.aboutUsImageUrl ? (
                          <img src={formData.aboutUsImageUrl} alt="About Us" className="h-full object-contain" />
                        ) : (
@@ -161,8 +172,8 @@ export function SettingsTab() {
                    <Input 
                      value={formData.homeVideoUrl} 
                      onChange={(e) => setFormData({...formData, homeVideoUrl: e.target.value})} 
-                     className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                     disabled={!editMode}
+                     className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                     disabled={!editModeGeneral}
                      placeholder="https://www.youtube.com/embed/..."
                    />
                 </div>
@@ -171,8 +182,8 @@ export function SettingsTab() {
                    <Input 
                      value={formData.hospitalName} 
                      onChange={(e) => setFormData({...formData, hospitalName: e.target.value})} 
-                     className="bg-slate-100 cursor-not-allowed opacity-70" 
-                     disabled
+                     className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                     disabled={!editModeGeneral}
                    />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -185,8 +196,8 @@ export function SettingsTab() {
                           newNums[0] = e.target.value;
                           setFormData({...formData, contactNumbers: newNums});
                         }} 
-                        className="bg-slate-100 cursor-not-allowed opacity-70" 
-                        disabled
+                        className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeGeneral}
                       />
                    </div>
                    <div>
@@ -198,8 +209,8 @@ export function SettingsTab() {
                           newNums[1] = e.target.value;
                           setFormData({...formData, contactNumbers: newNums});
                         }} 
-                        className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                        disabled={!editMode}
+                        className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeGeneral}
                       />
                    </div>
                 </div>
@@ -212,17 +223,17 @@ export function SettingsTab() {
                        newEmails[0] = e.target.value;
                        setFormData({...formData, emails: newEmails});
                      }} 
-                     className="bg-slate-100 cursor-not-allowed opacity-70" 
-                     disabled
+                     className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                     disabled={!editModeGeneral}
                    />
                 </div>
                 <div>
                    <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Address</label>
                    <textarea
-                     className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-sm focus-visible:outline-none cursor-not-allowed opacity-70"
+                     className={`flex min-h-[80px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"}`}
                      value={formData.address}
                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                     disabled
+                     disabled={!editModeGeneral}
                    />
                 </div>
                 <div>
@@ -230,8 +241,8 @@ export function SettingsTab() {
                    <Input 
                      value={formData.googleMapsLink} 
                      onChange={(e) => setFormData({...formData, googleMapsLink: e.target.value})} 
-                     className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                     disabled={!editMode}
+                     className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                     disabled={!editModeGeneral}
                    />
                 </div>
              </div>
@@ -241,13 +252,13 @@ export function SettingsTab() {
              <Card className="border-none shadow-sm bg-white">
                 <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                    <h3 className="font-bold text-slate-800">Integrations & SEO</h3>
-                   {editMode ? (
-                     <Button size="sm" onClick={handleSave} disabled={isSaving} className="gap-2">
-                       {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                   {editModeIntegrations ? (
+                     <Button size="sm" onClick={() => handleSave("integrations")} disabled={isSavingIntegrations} className="gap-2">
+                       {isSavingIntegrations ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                        Save
                      </Button>
                    ) : (
-                     <Button size="sm" onClick={() => setEditMode(true)} variant="outline" className="gap-2">
+                     <Button size="sm" onClick={() => setEditModeIntegrations(true)} variant="outline" className="gap-2">
                        Edit
                      </Button>
                    )}
@@ -258,8 +269,8 @@ export function SettingsTab() {
                       <Input 
                         value={formData.whatsappNumber} 
                         onChange={(e) => setFormData({...formData, whatsappNumber: e.target.value})} 
-                        className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                        disabled={!editMode}
+                        className={!editModeIntegrations ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeIntegrations}
                       />
                    </div>
 
@@ -268,8 +279,8 @@ export function SettingsTab() {
                       <Input 
                         value={formData.socialHandles.youtube} 
                         onChange={(e) => setFormData({...formData, socialHandles: { ...formData.socialHandles, youtube: e.target.value }})} 
-                        className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                        disabled={!editMode}
+                        className={!editModeIntegrations ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeIntegrations}
                         placeholder="https://www.youtube.com/@lakecityhospitalbhopal"
                       />
                    </div>
@@ -279,8 +290,8 @@ export function SettingsTab() {
                       <Input 
                         value={formData.socialHandles.instagram} 
                         onChange={(e) => setFormData({...formData, socialHandles: { ...formData.socialHandles, instagram: e.target.value }})} 
-                        className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                        disabled={!editMode}
+                        className={!editModeIntegrations ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeIntegrations}
                         placeholder="https://www.instagram.com/lakecity.hospital/"
                       />
                    </div>
@@ -292,18 +303,18 @@ export function SettingsTab() {
                       <Input 
                         value={seoDefaults.metaTitle} 
                         onChange={(e) => setSeoDefaults({...seoDefaults, metaTitle: e.target.value})} 
-                        className={!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        className={!editModeIntegrations ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
                         placeholder="Lake City Caring Partners"
-                        disabled={!editMode}
+                        disabled={!editModeIntegrations}
                       />
                    </div>
                    <div>
                       <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Default Meta Description</label>
                       <textarea
-                        className={`flex min-h-[80px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${!editMode ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"}`}
+                        className={`flex min-h-[80px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${!editModeIntegrations ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"}`}
                         value={seoDefaults.description}
                         onChange={(e) => setSeoDefaults({...seoDefaults, description: e.target.value})}
-                        disabled={!editMode}
+                        disabled={!editModeIntegrations}
                       />
                    </div>
                 </div>

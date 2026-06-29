@@ -1,24 +1,26 @@
-import { Request, Response, NextFunction } from "express";
-import Setting from "../models/Setting.js";
-import { AppError } from "../utils/AppError.js";
+import { NextFunction, Request, Response } from "express";
+import Admin from "../models/Admin.js";
 import { catchAsync } from "../utils/catchAsync.js";
 
 // Get settings
 export const getSettings = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const setting = await Setting.findOne();
-  res.status(200).json(setting || {});
+  const admin = await Admin.findOne().select("-passwordHash -otpCode -otpExpiry") || {};
+  res.status(200).json(admin);
 });
 
 // Create or update settings
 export const saveSettings = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  let setting = await Setting.findOne();
-  if (setting) {
-    setting = await Setting.findByIdAndUpdate(setting._id, req.body, { 
+  let admin = await Admin.findOne();
+  
+  if (admin) {
+    const { email, passwordHash, otpCode, otpExpiry, ...settingsData } = req.body;
+    admin = await Admin.findByIdAndUpdate(admin._id, settingsData, { 
        new: true,
        runValidators: true
-    });
+    }).select("-passwordHash -otpCode -otpExpiry");
   } else {
-    setting = await Setting.create(req.body);
+    return res.status(404).json({ message: "Admin account not found. Please setup admin first." });
   }
-  res.status(200).json(setting);
+
+  res.status(200).json(admin);
 });

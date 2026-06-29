@@ -1,27 +1,24 @@
+import cors from "cors";
+import "dotenv/config";
 import express from "express";
 import path from "path";
-import cors from "cors";
-import dotenv from "dotenv";
-import { connectDB } from "./src/config/db.js";
-import doctorRoutes from "./routes/doctorRoutes.js";
-import appointmentRoutes from "./routes/appointmentRoutes.js";
+import { globalErrorHandler } from "./middleware/errorHandler.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import departmentRoutes from "./routes/departmentRoutes.js";
-import leadRoutes from "./routes/leadRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
+import departmentRoutes from "./routes/departmentRoutes.js";
+import doctorRoutes from "./routes/doctorRoutes.js";
+import insuranceRoutes from "./routes/insuranceRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import settingRoutes from "./routes/settingRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
-import insuranceRoutes from "./routes/insuranceRoutes.js";
-import analyticsRoutes from "./routes/analyticsRoutes.js";
-import { globalErrorHandler } from "./middleware/errorHandler.js";
-
-dotenv.config();
+import { connectDB } from "./src/config/db.js";
 
 async function startServer() {
   const app = express();
   const isDev = process.argv.includes("--dev");
-  const PORT = isDev ? 3001 : process.env.PORT || 3000;
+  const PORT = isDev ? 3001 : Number(process.env.PORT) || 3000;
 
   // Middlewares
   app.use(cors());
@@ -39,7 +36,6 @@ async function startServer() {
   app.use("/api/appointments", appointmentRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/departments", departmentRoutes);
-  app.use("/api/leads", leadRoutes);
   app.use("/api/content", contentRoutes);
   app.use("/api/reviews", reviewRoutes);
   app.use("/api/settings", settingRoutes);

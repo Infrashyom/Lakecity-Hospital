@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface SeoDefaults {
   metaTitle: string;
@@ -14,6 +14,9 @@ export interface SiteSettings {
   googleMapsLink?: string;
   whatsappNumber?: string;
   seoDefaults?: SeoDefaults;
+  socialHandles?: any;
+  homeVideoUrl?: string;
+  aboutUsImageUrl?: string;
 }
 
 interface SettingsContextType {
@@ -58,6 +61,19 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Update favicon when settings change
+  useEffect(() => {
+    if (settings?.logoUrl) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = settings.logoUrl;
+    }
+  }, [settings?.logoUrl]);
 
   return (
     <SettingsContext.Provider value={{ settings, loading, refreshSettings: fetchSettings }}>

@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, Phone, Calendar, HeartPulse } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
-import { cn } from "@/src/lib/utils";
 import { useSettings } from "@/src/contexts/SettingsContext";
+import { cn } from "@/src/lib/utils";
+import { Calendar, Menu, Phone, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -51,7 +51,7 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             {settings?.logoUrl ? (
-              <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform" />
+              <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" />
             ) : (
               <>
                 <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-105 transition-transform flex items-center justify-center">
@@ -91,12 +91,6 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <a href={`tel:${primaryPhone?.replace(/\D/g, '')}`} className="hidden xl:block">
-              <Button variant="outline" className="gap-2 pointer-events-none">
-                <Phone className="h-4 w-4" />
-                <span>{primaryPhone}</span>
-              </Button>
-            </a>
             <Link to="/book">
               <Button className="gap-2">
                 <Calendar className="h-4 w-4" />
@@ -150,7 +144,7 @@ export function Navbar() {
                 </Button>
               </Link>
               <a href="tel:1066" className="w-full">
-                <Button variant="danger" className="w-full gap-2 justify-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger pointer-events-none">
+                <Button variant="danger" className="w-full gap-2 justify-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger">
                   <Phone className="h-4 w-4" aria-hidden="true" />
                   <span>Emergency: 1066</span>
                 </Button>

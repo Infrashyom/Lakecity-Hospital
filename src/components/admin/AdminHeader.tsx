@@ -1,15 +1,14 @@
-import React from "react";
-import { Search, Plus, Menu } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
-import { Input } from "@/src/components/ui/Input";
+import { Menu, Plus } from "lucide-react";
 
 interface HeaderProps {
   title: string;
   onAddClick?: () => void;
   onMenuClick?: () => void;
+  addLabel?: string;
 }
 
-export function AdminHeader({ title, onAddClick, onMenuClick }: HeaderProps) {
+export function AdminHeader({ title, onAddClick, onMenuClick, addLabel = "Add New" }: HeaderProps) {
   return (
     <header className="flex justify-between items-center mb-10 pt-4 lg:pt-0">
       <div className="flex items-center gap-4">
@@ -29,7 +28,7 @@ export function AdminHeader({ title, onAddClick, onMenuClick }: HeaderProps) {
         {onAddClick && (
           <Button className="gap-2 shrink-0" onClick={onAddClick}>
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add New</span>
+            <span className="hidden sm:inline">{addLabel}</span>
           </Button>
         )}
       </div>

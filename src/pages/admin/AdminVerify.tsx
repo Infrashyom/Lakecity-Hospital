@@ -99,7 +99,7 @@ export function AdminVerify() {
 
               <Button 
                 type="submit" 
-                variant="secondary"
+                variant="default"
                 disabled={isLoading || code.length !== 6}
                 className="w-full h-12 text-base group"
               >

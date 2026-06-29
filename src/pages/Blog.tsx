@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { Calendar, User, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
-import { Input } from "@/src/components/ui/Input";
-import { SEO } from "@/src/components/SEO";
+import { ArrowRight, Calendar, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export function Blog() {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -89,10 +88,10 @@ export function Blog() {
                     {post.title}
                   </h3>
                   <p className="text-slate-600 mb-6 line-clamp-3 flex-grow">
-                    {post.excerpt || post.seoDescription || (post.content?.substring(0, 100) + '...')}
+                    {post.description || post.seoDescription || (post.content?.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...')}
                   </p>
                   <div className="mt-auto">
-                    <Link to={`/blog/${post._id || post.id}`}>
+                    <Link to={`/blog/${post.slug || post._id || post.id}`}>
                       <Button variant="ghost" className="p-0 h-auto font-semibold hover:bg-transparent hover:text-primary-dark group/btn">
                         Read Article 
                         <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />

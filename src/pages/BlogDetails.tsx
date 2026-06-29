@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { Calendar, User, ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/src/components/ui/Button";
 import { SEO } from "@/src/components/SEO";
+import { Button } from "@/src/components/ui/Button";
+import { ArrowLeft, Calendar, Loader2, User } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 export function BlogDetails() {
   const { id } = useParams();
@@ -17,7 +17,7 @@ export function BlogDetails() {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data)) {
-            const found = data.find((p: any) => p._id === id || p.id === id);
+            const found = data.find((p: any) => p._id === id || p.id === id || p.slug === id);
             if (found) {
               setPost(found);
             }
@@ -54,7 +54,7 @@ export function BlogDetails() {
 
   return (
     <div className="py-24 bg-white min-h-screen">
-      <SEO title={post.title} description={post.seoDescription || post.excerpt || "Read this article on Lake City Hospital"} />
+      <SEO title={post.title} description={post.seoDescription || post.description || "Read this article on Lake City Hospital"} />
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <Link to="/blog" className="inline-flex items-center text-primary font-medium hover:text-primary-dark transition-colors mb-8">
@@ -98,7 +98,7 @@ export function BlogDetails() {
 
             <div className="prose prose-lg prose-slate max-w-none hover:prose-a:text-primary-dark focus:prose-a:text-primary-dark">
               {/* For simplicity we will assume content is either markdown or plain text, or html. Just render it for now */}
-              <div dangerouslySetInnerHTML={{ __html: post.content || post.excerpt || '' }} />
+              <div dangerouslySetInnerHTML={{ __html: post.content || post.description || '' }} />
             </div>
           </motion.div>
         </div>

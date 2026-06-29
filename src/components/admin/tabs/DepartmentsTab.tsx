@@ -7,17 +7,17 @@ import { Input } from "@/src/components/ui/Input";
 
 function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boolean; onClose: () => void; onSave: (dept: any) => void; editingDept?: any }) {
   const [formData, setFormData] = useState(editingDept || {
-    name: "", shortDescription: "", isActive: true, 
-    seoTitle: "", seoDescription: "", keywords: ""
+    name: "", shortDescription: "", 
+    seoTitle: "", seoDescription: "", seoKeywords: "", status: "ACTIVE"
   });
 
   React.useEffect(() => {
     if (editingDept) {
-      setFormData(editingDept);
+      setFormData({ ...editingDept, status: editingDept.status || "ACTIVE" });
     } else {
       setFormData({
-        name: "", shortDescription: "", isActive: true, 
-        seoTitle: "", seoDescription: "", keywords: ""
+        name: "", shortDescription: "", 
+        seoTitle: "", seoDescription: "", seoKeywords: "", status: "ACTIVE"
       });
     }
   }, [editingDept, isOpen]);
@@ -46,6 +46,16 @@ function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boo
                 placeholder="Overview of the department..."
               />
             </div>
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="deptStatus" 
+                checked={formData.status === "ACTIVE"} 
+                onChange={(e) => setFormData({...formData, status: e.target.checked ? "ACTIVE" : "INACTIVE"})} 
+                className="rounded text-primary focus:ring-primary" 
+              />
+              <label htmlFor="deptStatus" className="text-sm font-medium">Active Department</label>
+            </div>
             <div className="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-4">
                <h3 className="font-bold text-sm text-slate-700 flex items-center gap-2"><FileText className="w-4 h-4"/> SEO & Meta Information</h3>
                <div>
@@ -61,10 +71,10 @@ function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boo
                      placeholder="Meta description..."
                   />
                </div>
-            </div>
-            <div className="flex items-center gap-2 pt-2">
-              <input type="checkbox" id="isActive" checked={formData.isActive !== false} onChange={(e) => setFormData({...formData, isActive: e.target.checked})} className="rounded text-primary focus:ring-primary" />
-              <label htmlFor="isActive" className="text-sm font-medium">Department is Active</label>
+               <div>
+                  <label className="text-sm font-medium mb-1 block">SEO Keywords</label>
+                  <Input value={formData.seoKeywords || ''} onChange={(e) => setFormData({...formData, seoKeywords: e.target.value})} placeholder="e.g. cardiology, heart center, best cardiologist" />
+               </div>
             </div>
           </div>
         </div>
@@ -108,10 +118,6 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
     }
   };
 
-  const toggleDeptStatus = async (dept: any) => {
-    await handleSaveDepartment({ ...dept, isActive: !(dept.isActive !== false) });
-  };
-
   const handleSaveDoctor = async (docData: any) => {
       try {
         const response = await authFetch(`/api/doctors/${docData._id || docData.id}`, {
@@ -145,16 +151,16 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
           );
 
           return (
-            <Card key={i} className={`border-none shadow-sm bg-white overflow-hidden hover:shadow-md transition-all ${dept.isActive === false ? 'opacity-70' : ''}`}>
+            <Card key={i} className="border-none shadow-sm bg-white overflow-hidden hover:shadow-md transition-all">
               <div className="p-5 flex flex-col items-start gap-4">
                 
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-4">
                   <div className="flex-1 flex gap-4 w-full md:w-auto">
-                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center shrink-0 ${dept.isActive === false ? 'bg-slate-100 text-slate-400' : 'bg-primary/10 text-primary'}`}>
+                    <div className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 text-primary">
                       <Building2 className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg text-slate-800">{dept.name} {!dept.isActive && <span className="text-xs font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded ml-2">INACTIVE</span>}</h3>
+                      <h3 className="font-bold text-lg text-slate-800">{dept.name}</h3>
                       <p className="text-sm text-slate-500 font-medium w-full max-w-lg mb-2">{dept.shortDescription || 'No description provided.'}</p>
                       <div className="flex gap-4">
                         <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-medium">{assignedDoctors.length} Assigned Doctors</span>
@@ -167,9 +173,6 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
                     <Button variant="outline" size="sm" className="gap-2" onClick={() => { setEditingDept(dept); setIsModalOpen(true); }}>
                       <Edit className="w-4 h-4" /> Edit Details
                     </Button>
-                    <Button variant={dept.isActive !== false ? "outline" : "outline"} size="sm" className={`gap-2 ${dept.isActive !== false ? "text-danger border-danger/30 hover:bg-danger hover:text-white" : "text-success border-success/30 hover:bg-success hover:text-white"}`} onClick={() => toggleDeptStatus(dept)}>
-                       {dept.isActive !== false ? "Deactivate" : "Activate"}
-                    </Button>
                   </div>
                 </div>
 
@@ -181,26 +184,8 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {assignedDoctors.map(doc => (
-                        <div key={doc._id || doc.id} className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-100 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
-                            <div className="flex-1 overflow-hidden">
-                               <p className="text-sm font-bold text-slate-800 truncate">{doc.name}</p>
-                               <p className="text-[10px] text-slate-500 truncate">{doc.specialty}</p>
-                            </div>
-                          </div>
-                          <div className="mt-2 bg-white rounded-md flex">
-                            <select 
-                              className="text-xs w-full bg-transparent border border-slate-200 outline-none p-1.5 rounded-md text-slate-600 focus:ring-1 focus:ring-primary font-medium"
-                              value={doc.department || ''}
-                              onChange={(e) => handleSaveDoctor({ ...doc, department: e.target.value })}
-                            >
-                              <option value="">Remove from Department</option>
-                              {departments.filter(d => d._id !== dept._id).map((d: any) => (
-                                <option key={d._id || d.id} value={d._id || d.id}>Move to {d.name}</option>
-                              ))}
-                            </select>
-                          </div>
+                        <div key={doc._id || doc.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg">
+                          <p className="text-sm font-bold text-slate-800 truncate pr-2">{doc.name}</p>
                         </div>
                       ))}
                     </div>

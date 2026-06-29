@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  getDoctors,
-  getDoctorById,
   createDoctor,
-  updateDoctor,
   deleteDoctor,
+  getDoctorById,
+  getDoctors,
+  updateDoctor,
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/auth.js";
 

@@ -1,8 +1,6 @@
-import { Link } from "react-router-dom";
-import { HeartPulse, MapPin, Phone, Mail, Instagram, Youtube } from "lucide-react";
-import { Button } from "@/src/components/ui/Button";
-import { Input } from "@/src/components/ui/Input";
 import { useSettings } from "@/src/contexts/SettingsContext";
+import { Instagram, Mail, MapPin, Phone, Youtube } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   const { settings } = useSettings();
@@ -23,7 +21,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 group">
               {settings?.logoUrl ? (
-                 <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform brightness-0 invert" />
+                 <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform bg-white p-1 rounded" referrerPolicy="no-referrer" />
               ) : (
                 <>
                   <div className="bg-primary text-white p-2 rounded-xl">

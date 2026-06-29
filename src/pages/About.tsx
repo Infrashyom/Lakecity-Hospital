@@ -1,11 +1,14 @@
-import { motion } from "motion/react";
-import { Link } from "react-router-dom";
-import { Award, ShieldCheck, Users, HeartPulse, CheckCircle2 } from "lucide-react";
+import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
-import { SEO } from "@/src/components/SEO";
+import { useSettings } from "@/src/contexts/SettingsContext";
+import { Award, CheckCircle2, HeartPulse, ShieldCheck } from "lucide-react";
+import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 
 export function About() {
+  const { settings } = useSettings();
+
   return (
     <div className="min-h-screen pt-32 pb-20 bg-white">
       <SEO title="About Us" description="Learn about Lake City Hospital's history, mission, and vision." />
@@ -44,7 +47,7 @@ export function About() {
           >
             <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=2070&auto=format&fit=crop" 
+                src={settings?.aboutUsImageUrl || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"} 
                 alt="Hospital Team" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

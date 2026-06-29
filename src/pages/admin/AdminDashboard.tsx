@@ -1,28 +1,34 @@
-import { authFetch } from "@/src/lib/authFetch.js";
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { 
-  Calendar, MoreHorizontal, CheckCircle2, 
-  XCircle, Clock, Filter, Trash2, Edit, X,
-  Activity, Settings, LayoutDashboard, Users, Building2, MessageSquare, FileText, Star, ImageIcon, Plus, Eye, EyeOff
-} from "lucide-react";
+import { AdminHeader } from "@/src/components/admin/AdminHeader";
+import { AdminSidebar, AdminTab } from "@/src/components/admin/AdminSidebar";
+import { BlogEditorModal } from "@/src/components/admin/BlogEditorModal";
+import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
+import { ImageUpload } from "@/src/components/admin/ImageUpload";
+import { DepartmentsTab } from "@/src/components/admin/tabs/DepartmentsTab";
+import { InsurancesTab } from "@/src/components/admin/tabs/InsurancesTab";
+import { MediaGalleryTab } from "@/src/components/admin/tabs/MediaGalleryTab";
+import { VirtualTourTab } from "@/src/components/admin/tabs/VirtualTourTab";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
+import { authFetch } from "@/src/lib/authFetch.js";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Edit,
+  Eye, EyeOff,
+  MessageSquare,
+  Plus,
+  Trash2,
+  X
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AdminSidebar, AdminTab } from "@/src/components/admin/AdminSidebar";
-import { AdminHeader } from "@/src/components/admin/AdminHeader";
-import { BlogEditorModal } from "@/src/components/admin/BlogEditorModal";
-import { ImageUpload } from "@/src/components/admin/ImageUpload";
-import { MediaGalleryTab } from "@/src/components/admin/tabs/MediaGalleryTab";
-import { DepartmentsTab } from "@/src/components/admin/tabs/DepartmentsTab";
-import { VirtualTourTab } from "@/src/components/admin/tabs/VirtualTourTab";
-import { InsurancesTab } from "@/src/components/admin/tabs/InsurancesTab";
 
 function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = [] }: { isOpen: boolean; onClose: () => void; onSave: (doc: any) => void; editingDoctor?: any; departments?: any[] }) {
   const [formData, setFormData] = useState({
     name: "", specialty: "", image: "", experience: "", availability: "", bio: "",
-    registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", isActive: true, 
+    registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", 
     department: "", education: "", affiliations: "", publications: "", expertise: "", awards: "", surgeriesCount: 0
   });
 
@@ -39,19 +45,19 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
         consultationFees: editingDoctor.consultationFees || 500,
         opdTiming: editingDoctor.opdTiming || "",
         languages: (editingDoctor.languages || []).join(", "),
-        isActive: editingDoctor.isActive ?? true,
+        status: editingDoctor.status || "ACTIVE",
         department: editingDoctor.department || "",
-        education: Array.isArray(editingDoctor.education) ? editingDoctor.education.join(";") : (editingDoctor.education || ""),
-        affiliations: Array.isArray(editingDoctor.affiliations) ? editingDoctor.affiliations.join(";") : (editingDoctor.affiliations || ""),
-        publications: Array.isArray(editingDoctor.publications) ? editingDoctor.publications.join(";") : (editingDoctor.publications || ""),
-        expertise: Array.isArray(editingDoctor.expertise) ? editingDoctor.expertise.join(";") : (editingDoctor.expertise || ""),
-        awards: Array.isArray(editingDoctor.awards) ? editingDoctor.awards.join(";") : (editingDoctor.awards || ""),
+        education: Array.isArray(editingDoctor.education) ? editingDoctor.education.join("\n") : (editingDoctor.education || ""),
+        affiliations: Array.isArray(editingDoctor.affiliations) ? editingDoctor.affiliations.join("\n") : (editingDoctor.affiliations || ""),
+        publications: Array.isArray(editingDoctor.publications) ? editingDoctor.publications.join("\n") : (editingDoctor.publications || ""),
+        expertise: Array.isArray(editingDoctor.expertise) ? editingDoctor.expertise.join("\n") : (editingDoctor.expertise || ""),
+        awards: Array.isArray(editingDoctor.awards) ? editingDoctor.awards.join("\n") : (editingDoctor.awards || ""),
         surgeriesCount: editingDoctor.surgeriesCount || 0
       });
     } else {
       setFormData({ 
         name: "", specialty: "", image: "", experience: "", availability: "", bio: "",
-        registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", isActive: true, 
+        registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", 
         department: "", education: "", affiliations: "", publications: "", expertise: "", awards: "", surgeriesCount: 0
       });
     }
@@ -94,8 +100,8 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
               <Input value={formData.registrationNumber} onChange={(e) => setFormData({...formData, registrationNumber: e.target.value})} placeholder="MCI-12345" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Experience <span className="text-danger">*</span></label>
-              <Input value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} placeholder="10+ years" />
+              <label className="text-sm font-medium mb-1 block">Experience (Years) <span className="text-danger">*</span></label>
+              <Input type="number" min="0" value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} placeholder="10" />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Consultation Fees</label>
@@ -121,24 +127,24 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Education (Separate by ;)</label>
-              <textarea value={formData.education} onChange={(e) => setFormData({...formData, education: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={2} placeholder="MBBS, AIIMS; MD - Cardiology" />
+              <label className="text-sm font-medium mb-1 block">Education (Separate by new line)</label>
+              <textarea value={formData.education} onChange={(e) => setFormData({...formData, education: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={3} placeholder="MBBS, AIIMS&#10;MD - Cardiology" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Affiliations (Separate by ;)</label>
-              <textarea value={formData.affiliations} onChange={(e) => setFormData({...formData, affiliations: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={2} placeholder="Member of API; Fellow of ACC" />
+              <label className="text-sm font-medium mb-1 block">Affiliations (Separate by new line)</label>
+              <textarea value={formData.affiliations} onChange={(e) => setFormData({...formData, affiliations: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={3} placeholder="Member of API&#10;Fellow of ACC" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Awards (Separate by ;)</label>
-              <textarea value={formData.awards} onChange={(e) => setFormData({...formData, awards: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={2} placeholder="Best Doctor 2021; Excellence Award" />
+              <label className="text-sm font-medium mb-1 block">Awards (Separate by new line)</label>
+              <textarea value={formData.awards} onChange={(e) => setFormData({...formData, awards: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={3} placeholder="Best Doctor 2021&#10;Excellence Award" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Expertise (Separate by ;)</label>
-              <textarea value={formData.expertise} onChange={(e) => setFormData({...formData, expertise: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={2} placeholder="Heart Surgery; Angioplasty" />
+              <label className="text-sm font-medium mb-1 block">Expertise (Separate by new line)</label>
+              <textarea value={formData.expertise} onChange={(e) => setFormData({...formData, expertise: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={3} placeholder="Heart Surgery&#10;Angioplasty" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Publications (Separate by ;)</label>
-              <textarea value={formData.publications} onChange={(e) => setFormData({...formData, publications: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={2} placeholder="Journal of Cardiology 2020" />
+              <label className="text-sm font-medium mb-1 block">Publications (Separate by new line)</label>
+              <textarea value={formData.publications} onChange={(e) => setFormData({...formData, publications: e.target.value})} className="w-full rounded-xl border border-gray-200 p-2 text-sm focus:ring-2 focus:ring-primary outline-none" rows={3} placeholder="Journal of Cardiology 2020" />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Successful Surgeries</label>
@@ -154,27 +160,30 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
               placeholder="Brief biography..."
             />
           </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="isActive" checked={formData.isActive} onChange={(e) => setFormData({...formData, isActive: e.target.checked})} className="rounded text-primary focus:ring-primary" />
-            <label htmlFor="isActive" className="text-sm font-medium">Active Profile</label>
-          </div>
         </div>
         <div className="px-6 py-4 border-t bg-slate-50 flex justify-end gap-3 shrink-0">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={() => {
-            if (!formData.name.trim() || !formData.specialty.trim() || !formData.registrationNumber.trim() || !formData.experience.trim()) {
-              alert("Name, Specialty, Reg Number, and Experience are mandatory fields.");
+            if (!formData.name.trim() || !formData.specialty.trim() || !formData.registrationNumber.trim() || !String(formData.experience).trim() || !formData.availability.trim()) {
+              toast.error("Name, Specialty, Reg Number, Experience, and Availability are mandatory fields.");
               return;
             }
-            onSave({
+            const payload: any = {
               ...formData, 
+              experience: Number(formData.experience) || 0,
+              surgeriesCount: Number(formData.surgeriesCount) || 0,
+              consultationFees: formData.consultationFees ? Number(formData.consultationFees) : 500,
               languages: formData.languages.split(',').map(s=>s.trim()).filter(Boolean),
-              education: formData.education.split(';').map(s=>s.trim()).filter(Boolean),
-              affiliations: formData.affiliations.split(';').map(s=>s.trim()).filter(Boolean),
-              publications: formData.publications.split(';').map(s=>s.trim()).filter(Boolean),
-              expertise: formData.expertise.split(';').map(s=>s.trim()).filter(Boolean),
-              awards: formData.awards.split(';').map(s=>s.trim()).filter(Boolean),
-            });
+              education: formData.education.split(/\n|;/).map(s=>s.trim()).filter(Boolean),
+              affiliations: formData.affiliations.split(/\n|;/).map(s=>s.trim()).filter(Boolean),
+              publications: formData.publications.split(/\n|;/).map(s=>s.trim()).filter(Boolean),
+              expertise: formData.expertise.split(/\n|;/).map(s=>s.trim()).filter(Boolean),
+              awards: formData.awards.split(/\n|;/).map(s=>s.trim()).filter(Boolean),
+            };
+            if (!payload.department) {
+              delete payload.department;
+            }
+            onSave(payload);
           }}>{editingDoctor ? 'Save Changes' : 'Add Doctor'}</Button>
         </div>
       </Card>
@@ -184,16 +193,15 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
 
 // BlogModal extracted to src/components/admin/BlogEditorModal.tsx
 
-import { SettingsTab } from "@/src/components/admin/tabs/SettingsTab";
-import { LeadsTab } from "@/src/components/admin/tabs/LeadsTab";
 import { ReviewsTab } from "@/src/components/admin/tabs/ReviewsTab";
+import { SettingsTab } from "@/src/components/admin/tabs/SettingsTab";
+import { toast } from "sonner";
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("dashboard");
   const [appointments, setAppointments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [pages, setPages] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -210,6 +218,10 @@ export function AdminDashboard() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any>(null);
+
+  const [banConfirmDoctor, setBanConfirmDoctor] = useState<any | null>(null);
+  const [deleteConfirmAppointmentId, setDeleteConfirmAppointmentId] = useState<string | null>(null);
+  const [deleteConfirmBlogId, setDeleteConfirmBlogId] = useState<string | null>(null);
 
   const [apptSearchTerm, setApptSearchTerm] = useState("");
   const [apptFilterStatus, setApptFilterStatus] = useState("All");
@@ -240,15 +252,6 @@ export function AdminDashboard() {
     try {
       const res = await authFetch("/api/departments");
       if (res.ok) setDepartments(await res.json());
-    } catch (error) {
-       console.error("Fetch errors:", error);
-    }
-  };
-
-  const fetchLeads = async () => {
-    try {
-      const res = await authFetch("/api/leads");
-      if (res.ok) setLeads(await res.json());
     } catch (error) {
        console.error("Fetch errors:", error);
     }
@@ -293,7 +296,6 @@ export function AdminDashboard() {
          fetchAppointments(), 
          fetchDoctors(), 
          fetchDepartments(), 
-         fetchLeads(),
          fetchContent(),
          fetchClicks(),
          fetchReviews()
@@ -311,7 +313,7 @@ export function AdminDashboard() {
 
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert("New Password and Confirm Password do not match.");
+      toast.error("New Password and Confirm Password do not match.");
       return;
     }
 
@@ -329,15 +331,15 @@ export function AdminDashboard() {
         body: JSON.stringify({ email, ...passwordForm })
       });
       if (res.ok) {
-        alert("Password updated");
+        toast.success("Password updated");
         setIsPasswordModalOpen(false);
-        setPasswordForm({ currentPassword: '', newPassword: '' });
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
         const error = await res.json();
-        alert(error.message || "Error updating password");
+        toast.error(error.message || "Error updating password");
       }
     } catch (error) {
-      alert("Error updating password");
+      toast.error("Error updating password");
     }
   };
 
@@ -390,6 +392,9 @@ export function AdminDashboard() {
           fetchDoctors();
           setIsDoctorModalOpen(false);
           setEditingDoctor(null);
+          toast.success("Doctor details updated successfully.");
+        } else {
+          toast.error("Failed to update doctor.");
         }
       } else {
         const response = await authFetch(`/api/doctors`, {
@@ -400,34 +405,51 @@ export function AdminDashboard() {
         if (response.ok) {
           fetchDoctors();
           setIsDoctorModalOpen(false);
+          toast.success("Doctor added successfully.");
+        } else {
+          toast.error("Failed to add doctor.");
         }
       }
     } catch (error) {
       console.error("Error saving doctor:", error);
+      toast.error("An error occurred while saving doctor.");
     }
   };
 
-  const handleDeleteDoctor = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this doctor?")) return;
+  const handleBanDoctor = async () => {
+    if (!banConfirmDoctor) return;
     try {
-      const response = await authFetch(`/api/doctors/${id}`, { method: "DELETE" });
+      const updatedDoctor = { ...banConfirmDoctor, status: banConfirmDoctor.status === "BANNED" ? "ACTIVE" : "BANNED" };
+      const response = await authFetch(`/api/doctors/${banConfirmDoctor._id || banConfirmDoctor.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedDoctor)
+      });
       if (response.ok) {
         fetchDoctors();
+        toast.success(`Doctor ${updatedDoctor.status === 'BANNED' ? 'banned' : 'unbanned'} successfully.`);
+      } else {
+        toast.error("Failed to update doctor status.");
       }
     } catch (error) {
-      console.error("Error deleting doctor:", error);
+      console.error("Error updating doctor status:", error);
+      toast.error("An error occurred while updating doctor status.");
+    } finally {
+      setBanConfirmDoctor(null);
     }
   };
 
-  const handleDeleteAppointment = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this appointment?")) return;
+  const handleDeleteAppointment = async () => {
+    if (!deleteConfirmAppointmentId) return;
     try {
-      const response = await authFetch(`/api/appointments/${id}`, { method: "DELETE" });
+      const response = await authFetch(`/api/appointments/${deleteConfirmAppointmentId}`, { method: "DELETE" });
       if (response.ok) {
         fetchAppointments();
       }
     } catch (error) {
       console.error("Error deleting appointment:", error);
+    } finally {
+      setDeleteConfirmAppointmentId(null);
     }
   };
 
@@ -454,15 +476,17 @@ export function AdminDashboard() {
     }
   };
 
-  const handleDeleteBlog = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this blog post?")) return;
+  const handleDeleteBlog = async () => {
+    if (!deleteConfirmBlogId) return;
     try {
-      const response = await authFetch(`/api/content/${id}`, { method: "DELETE" });
+      const response = await authFetch(`/api/content/${deleteConfirmBlogId}`, { method: "DELETE" });
       if (response.ok) {
         fetchContent();
       }
     } catch (error) {
       console.error("Error deleting blog:", error);
+    } finally {
+      setDeleteConfirmBlogId(null);
     }
   };
 
@@ -479,8 +503,13 @@ export function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8 w-full max-w-[100vw]">
         <AdminHeader 
-          title={activeTab} 
-          onAddClick={activeTab === 'doctors' ? () => { setEditingDoctor(null); setIsDoctorModalOpen(true); } : undefined}
+          title={activeTab === 'content' ? 'Blog Manager' : activeTab === 'media' ? 'Media Gallery' : activeTab === 'tour' ? 'Virtual Tour' : activeTab} 
+          onAddClick={
+            activeTab === 'doctors' ? () => { setEditingDoctor(null); setIsDoctorModalOpen(true); } :
+            activeTab === 'content' ? () => { setEditingBlog(null); setIsBlogModalOpen(true); } : 
+            undefined
+          }
+          addLabel={activeTab === 'content' ? 'Write Article' : 'Add New'}
           onMenuClick={() => setIsMobileMenuOpen(true)}
         />
 
@@ -534,20 +563,7 @@ export function AdminDashboard() {
               </Card>
             </div>
 
-            <h3 className="font-bold text-lg text-slate-800 mt-8">Lead Metrics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="border-none shadow-sm bg-white">
-                <CardContent className="p-6 text-center">
-                  <p className="text-sm font-medium text-slate-500 mb-1">Total Leads</p>
-                  <p className="text-3xl font-bold text-slate-900">{leads.length}</p>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm bg-white">
-                <CardContent className="p-6 text-center">
-                  <p className="text-sm font-medium text-slate-500 mb-1">Form Leads</p>
-                  <p className="text-3xl font-bold text-slate-900">{leads.filter(l => !l.sourcePage?.toLowerCase().includes('whatsapp')).length}</p>
-                </CardContent>
-              </Card>
               <Card className="border-none shadow-sm bg-white">
                 <CardContent className="p-6 text-center">
                   <p className="text-sm font-medium text-slate-500 mb-1">WhatsApp Clicks</p>
@@ -693,7 +709,7 @@ export function AdminDashboard() {
                                variant="ghost" 
                                size="icon" 
                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                               onClick={() => handleDeleteAppointment(appt._id)}
+                               onClick={() => setDeleteConfirmAppointmentId(appt._id)}
                              >
                                <Trash2 className="w-4 h-4" />
                              </Button>
@@ -718,11 +734,11 @@ export function AdminDashboard() {
         {activeTab === "doctors" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {doctors.map((doc, i) => (
-              <Card key={i} className={`border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-shadow flex flex-col ${!doc.isActive ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+              <Card key={i} className={`border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-shadow flex flex-col ${doc.status === 'INACTIVE' ? 'opacity-60 grayscale-[0.5]' : ''}`}>
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="flex gap-4 items-start mb-6">
                     <img 
-                      src={doc.image} 
+                      src={doc.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=e2e8f0&color=64748b&size=400`} 
                       alt={doc.name} 
                       className="w-16 h-16 rounded-2xl object-cover border shadow-sm shrink-0"
                       referrerPolicy="no-referrer"
@@ -735,23 +751,9 @@ export function AdminDashboard() {
                   </div>
                   
                   <div className="space-y-3 mb-6 flex-1">
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                       <div className="bg-slate-50 p-2 rounded-lg text-center">
-                          <p className="text-[10px] uppercase text-slate-500 font-bold">Views</p>
-                          <p className="font-bold text-slate-800">{doc.profileViews || 0}</p>
-                       </div>
-                       <div className="bg-slate-50 p-2 rounded-lg text-center">
-                          <p className="text-[10px] uppercase text-slate-500 font-bold">Requests</p>
-                          <p className="font-bold text-slate-800">{doc.appointmentRequests || 0}</p>
-                       </div>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Rating</span>
-                      <span className="font-bold flex items-center gap-1"><Star className="w-3 h-3 text-yellow-400 fill-yellow-400"/> {doc.rating} ({doc.reviews})</span>
-                    </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Exp. / Fees</span>
-                      <span className="font-bold text-slate-700">{doc.experience} / ₹{doc.consultationFees || 500}</span>
+                      <span className="font-bold text-slate-700">{doc.experience} Yrs / ₹{doc.consultationFees || 500}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Timing</span>
@@ -760,20 +762,16 @@ export function AdminDashboard() {
                   </div>
                   
                   <div className="flex flex-col gap-2 pt-4 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-medium text-slate-600 mb-2">
-                       <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={doc.isActive !== false} readOnly className="rounded text-primary" /> Active
-                       </label>
-                       <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={doc.featureOnHomepage} readOnly className="rounded text-primary" /> Featured
-                       </label>
-                    </div>
                     <div className="flex gap-2">
                       <Button variant="outline" className="flex-1 gap-2" onClick={() => { setEditingDoctor(doc); setIsDoctorModalOpen(true); }}>
                         <Edit className="w-4 h-4" /> Edit
                       </Button>
-                      <Button variant="danger" size="icon" onClick={() => handleDeleteDoctor(doc._id || doc.id)}>
-                        <Trash2 className="w-4 h-4" />
+                      <Button 
+                        variant={doc.status === "BANNED" ? "success" : "danger"} 
+                        className="flex-1 gap-2" 
+                        onClick={() => setBanConfirmDoctor(doc)}
+                      >
+                        {doc.status === "BANNED" ? "Unban" : "Ban"}
                       </Button>
                     </div>
                   </div>
@@ -803,22 +801,8 @@ export function AdminDashboard() {
           <InsurancesTab />
         )}
 
-        {activeTab === "leads" && (
-          <LeadsTab leads={leads} clicks={clicks} />
-        )}
-
         {activeTab === "content" && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
-              <div>
-                <h2 className="font-bold text-lg text-slate-800">Blog Manager</h2>
-                <p className="text-slate-500 text-sm">Create, edit, and publish blog articles or news updates.</p>
-              </div>
-              <Button onClick={() => { setEditingBlog(null); setIsBlogModalOpen(true); }} className="gap-2">
-                <Plus className="w-4 h-4" /> Write Article
-              </Button>
-            </div>
-            
             <div className="space-y-4">
               {blogs.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 bg-white rounded-xl shadow-sm border border-slate-100">
@@ -827,10 +811,9 @@ export function AdminDashboard() {
               ) : (
                 blogs.map((post, i) => (
                   <div key={post._id || i} className="bg-white rounded-xl p-4 flex flex-col md:flex-row gap-6 shadow-sm border border-slate-100 items-start">
-                    {/* Mock Image placeholder since we might not have one */}
                     <div className="w-full md:w-[240px] h-[160px] rounded-lg overflow-hidden shrink-0 bg-slate-100">
                       <img 
-                        src={`https://images.unsplash.com/photo-1576091160550-2173ff9e5eb4?w=400&h=300&fit=crop&random=${i}`} 
+                        src={post.image || `https://images.unsplash.com/photo-1576091160550-2173ff9e5eb4?w=400&h=300&fit=crop&random=${i}`} 
                         alt={post.title}
                         className="w-full h-full object-cover"
                       />
@@ -851,7 +834,12 @@ export function AdminDashboard() {
                         </div>
                         
                         <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100"
+                            onClick={() => window.open(`/blog/${post.slug || post._id || post.id}`, "_blank")}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button 
@@ -866,7 +854,7 @@ export function AdminDashboard() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100" 
-                            onClick={() => handleDeleteBlog(post._id || post.id)}
+                            onClick={() => setDeleteConfirmBlogId(post._id || post.id)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -975,6 +963,33 @@ export function AdminDashboard() {
           </Card>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!banConfirmDoctor}
+        title={banConfirmDoctor?.status === "BANNED" ? "Unban Doctor" : "Ban Doctor"}
+        message={`Are you sure you want to ${banConfirmDoctor?.status === "BANNED" ? "unban" : "ban"} ${banConfirmDoctor?.name}?`}
+        confirmText={banConfirmDoctor?.status === "BANNED" ? "Unban" : "Ban"}
+        onConfirm={handleBanDoctor}
+        onCancel={() => setBanConfirmDoctor(null)}
+      />
+
+      <ConfirmModal
+        isOpen={!!deleteConfirmAppointmentId}
+        title="Delete Appointment"
+        message="Are you sure you want to delete this appointment? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleDeleteAppointment}
+        onCancel={() => setDeleteConfirmAppointmentId(null)}
+      />
+
+      <ConfirmModal
+        isOpen={!!deleteConfirmBlogId}
+        title="Delete Blog Post"
+        message="Are you sure you want to delete this blog post? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleDeleteBlog}
+        onCancel={() => setDeleteConfirmBlogId(null)}
+      />
     </div>
   );
 }
