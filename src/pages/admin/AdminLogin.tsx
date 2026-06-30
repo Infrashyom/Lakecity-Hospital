@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { LogIn, Mail, Lock, Loader2, ArrowRight, UserPlus } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/src/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
+import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
+import { motion } from "motion/react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function AdminLogin() {
@@ -19,14 +19,22 @@ export function AdminLogin() {
     setError("");
 
     try {
-      // Bypass login logic to check the portal and its connectivity
-      sessionStorage.setItem("admin_temp_email", email);
-      
-      // We will also set a fake token so authFetch has something
-      localStorage.setItem("admin_token", "bypass_token");
-      
-      // Directly navigate to dashboard to bypass login page
-      navigate("/admin/dashboard");
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.requires2fa) {
+        sessionStorage.setItem("admin_temp_email", email);
+        navigate("/admin/verify");
+      } else {
+        setError(data.message || "Invalid credentials");
+      }
     } catch (err) {
       setError("Server connection failed. Please try again.");
     } finally {
@@ -65,7 +73,7 @@ export function AdminLogin() {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-primary" /> Gmail Address
+                  <Mail className="w-4 h-4 text-primary" /> Email
                 </label>
                 <Input 
                   type="email" 

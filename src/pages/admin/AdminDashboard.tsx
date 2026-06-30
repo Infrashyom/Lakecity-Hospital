@@ -213,6 +213,8 @@ export function AdminDashboard() {
   
   // Custom Modals
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isPasswordOtpRequested, setIsPasswordOtpRequested] = useState(false);
+  const [passwordOtp, setPasswordOtp] = useState("");
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -293,9 +295,12 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
-    // Automatically set a bypass token for direct access
-    localStorage.setItem("admin_token", "bypass_token");
-    
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      navigate("/admin/login");
+      return;
+    }
+
     const fetchData = async () => {
       setIsLoading(true);
       await Promise.all([
@@ -323,29 +328,47 @@ export function AdminDashboard() {
       return;
     }
 
-    const adminDataString = localStorage.getItem("admin_info") || "{}";
-    let email = "admin@lakecity.com";
-    try {
-      const parsed = JSON.parse(adminDataString);
-      if (parsed.email) email = parsed.email;
-    } catch(e) {}
-
-    try {
-      const res = await authFetch("/api/admin/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, ...passwordForm })
-      });
-      if (res.ok) {
-        toast.success("Password updated");
-        setIsPasswordModalOpen(false);
-        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        const error = await res.json();
-        toast.error(error.message || "Error updating password");
+    if (isPasswordOtpRequested) {
+      if (!passwordOtp) {
+        toast.error("Please enter the OTP");
+        return;
       }
-    } catch (error) {
-      toast.error("Error updating password");
+      try {
+        const res = await authFetch("/api/admin/change-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...passwordForm, otpCode: passwordOtp })
+        });
+        if (res.ok) {
+          toast.success("Password updated");
+          setIsPasswordModalOpen(false);
+          setIsPasswordOtpRequested(false);
+          setPasswordOtp("");
+          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } else {
+          const error = await res.json();
+          toast.error(error.message || "Error updating password");
+        }
+      } catch (error) {
+        toast.error("Error updating password");
+      }
+    } else {
+      try {
+        const res = await authFetch("/api/admin/request-password-change-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword: passwordForm.currentPassword })
+        });
+        if (res.ok) {
+          toast.success("OTP sent to your email");
+          setIsPasswordOtpRequested(true);
+        } else {
+          const error = await res.json();
+          toast.error(error.message || "Error verifying current password");
+        }
+      } catch (error) {
+        toast.error("Error requesting OTP");
+      }
     }
   };
 
@@ -967,37 +990,49 @@ export function AdminDashboard() {
           <Card className="w-full max-w-sm bg-white overflow-hidden">
             <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
               <h2 className="font-bold text-lg">Change Password</h2>
-              <button onClick={() => setIsPasswordModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200"><X className="w-5 h-5"/></button>
+              <button onClick={() => { setIsPasswordModalOpen(false); setIsPasswordOtpRequested(false); setPasswordOtp(""); setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' }); }} className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Current Password</label>
-                <div className="relative">
-                  <Input type={showCurrentPassword ? "text" : "password"} value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+              {isPasswordOtpRequested ? (
+                <div>
+                  <p className="text-sm text-slate-600 mb-4">A 6-digit verification code has been sent to your email.</p>
+                  <label className="text-sm font-medium mb-1 block">Enter Verification Code</label>
+                  <Input type="text" value={passwordOtp} onChange={(e) => setPasswordOtp(e.target.value)} placeholder="123456" className="text-center tracking-[0.5em] font-mono text-lg" maxLength={6} />
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">New Password</label>
-                <div className="relative">
-                  <Input type={showNewPassword ? "text" : "password"} value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Confirm New Password</label>
-                <div className="relative">
-                  <Input type={showConfirmPassword ? "text" : "password"} value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} className="pr-10" />
-                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <Button className="w-full mt-4" onClick={handlePasswordChange}>Update Password</Button>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Current Password</label>
+                    <div className="relative">
+                      <Input type={showCurrentPassword ? "text" : "password"} value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})} className="pr-10" />
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">New Password</label>
+                    <div className="relative">
+                      <Input type={showNewPassword ? "text" : "password"} value={passwordForm.newPassword} onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="pr-10" />
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Confirm New Password</label>
+                    <div className="relative">
+                      <Input type={showConfirmPassword ? "text" : "password"} value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} className="pr-10" />
+                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+              <Button className="w-full mt-4" onClick={handlePasswordChange}>
+                {isPasswordOtpRequested ? "Update Password" : "Verify & Continue"}
+              </Button>
             </div>
           </Card>
         </div>

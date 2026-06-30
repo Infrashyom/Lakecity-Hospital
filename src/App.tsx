@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import { Navbar } from "@/src/components/layout/Navbar";
+import { FloatingActionButtons } from "@/src/components/layout/FloatingActionButtons";
 import { Footer } from "@/src/components/layout/Footer";
+import { Navbar } from "@/src/components/layout/Navbar";
 import { ScrollToTop } from "@/src/components/ScrollToTop";
 import { useAnalyticsTracker } from "@/src/hooks/useAnalyticsTracker";
-import { FloatingActionButtons } from "@/src/components/layout/FloatingActionButtons";
+import { Loader2 } from "lucide-react";
+import React, { Suspense, lazy } from "react";
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { Toaster } from "sonner";
 
@@ -75,10 +75,10 @@ export default function App() {
           <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
           <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
 
-          {/* Admin Portal - Direct access bypass */}
+          {/* Admin Portal */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/login" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/verify" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/verify" element={<AdminVerify />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </Suspense>

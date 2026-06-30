@@ -79,7 +79,7 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
   }
 
   res.json({ 
-    message: "Credentials verified. OTP sent to your Gmail.",
+    message: "Credentials verified. OTP sent to your email.",
     email,
     requires2fa: true 
   });
@@ -141,17 +141,62 @@ export const setupInitialAdmin = catchAsync(async (req: Request, res: Response, 
   res.status(201).json({ message: "Admin created successfully", admin: { email: admin.email } });
 });
 
-export const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { email, currentPassword, newPassword } = req.body;
-  
-  const admin = await Admin.findOne({ email });
+export const requestPasswordChangeOtp = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+  if (!req.user?.id) {
+    return next(new AppError("Not authorized", 401));
+  }
+  const admin = await Admin.findById(req.user.id);
   if (!admin) return next(new AppError("Admin not found", 404));
+
+  const { currentPassword } = req.body;
+  if (!currentPassword) return next(new AppError("Current password is required", 400));
+  
+  const isMatch = await bcrypt.compare(currentPassword, admin.passwordHash);
+  if (!isMatch) return next(new AppError("Incorrect current password", 401));
+
+  // Generate OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  admin.otpCode = otpCode;
+  admin.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  await admin.save();
+
+  // Send Email
+  const emailSent = await sendOTPEmail(admin.email, otpCode);
+  
+  if (!emailSent) {
+    console.log(`[DEV ONLY] Password Change OTP for ${admin.email}: ${otpCode}`);
+  }
+
+  res.json({ 
+    message: "OTP sent to your email.",
+    requires2fa: true 
+  });
+});
+
+export const changePassword = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+  const { currentPassword, newPassword, otpCode } = req.body;
+  
+  if (!req.user?.id) {
+    return next(new AppError("Not authorized", 401));
+  }
+  
+  const admin = await Admin.findById(req.user.id);
+
+  if (!admin) return next(new AppError("Admin not found", 404));
+
+  if (!otpCode) return next(new AppError("OTP code is required", 400));
+
+  if (admin.otpCode !== otpCode || !admin.otpExpiry || admin.otpExpiry < new Date()) {
+    return next(new AppError("Invalid or expired verification code", 401));
+  }
 
   const isMatch = await bcrypt.compare(currentPassword, admin.passwordHash);
   if (!isMatch) return next(new AppError("Incorrect current password", 401));
 
   const salt = await bcrypt.genSalt(10);
   admin.passwordHash = await bcrypt.hash(newPassword, salt);
+  admin.otpCode = undefined;
+  admin.otpExpiry = undefined;
   await admin.save();
 
   res.json({ message: "Password updated successfully" });

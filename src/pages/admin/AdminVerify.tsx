@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { ShieldCheck, Mail, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/src/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function AdminVerify() {
@@ -38,6 +38,9 @@ export function AdminVerify() {
 
       if (response.ok && data.token) {
         localStorage.setItem("admin_token", data.token);
+        if (data.admin) {
+          localStorage.setItem("admin_info", JSON.stringify(data.admin));
+        }
         sessionStorage.removeItem("admin_temp_email");
         navigate("/admin/dashboard");
       } else {
@@ -63,7 +66,7 @@ export function AdminVerify() {
             <span className="text-3xl font-bold leading-none text-secondary">H</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mt-2">2-Factor Authentication</h1>
-          <p className="text-slate-600">Verification code sent to your Gmail</p>
+          <p className="text-slate-600">Verification code sent to your email</p>
         </div>
 
         <Card className="border-none shadow-xl border-t-4 border-t-secondary">

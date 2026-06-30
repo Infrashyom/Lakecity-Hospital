@@ -98,7 +98,9 @@ export function SettingsTab() {
         else setEditModeIntegrations(false);
         await refreshSettings();
       } else {
-        toast.error("Failed to save settings");
+        const errText = await res.text();
+        console.error("Save settings error:", errText);
+        toast.error("Failed to save settings: " + errText);
       }
     } catch (err) {
       console.error(err);
@@ -214,18 +216,33 @@ export function SettingsTab() {
                       />
                    </div>
                 </div>
-                <div>
-                   <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Primary Email</label>
-                   <Input 
-                     value={formData.emails[0] || ""} 
-                     onChange={(e) => {
-                       const newEmails = [...formData.emails];
-                       newEmails[0] = e.target.value;
-                       setFormData({...formData, emails: newEmails});
-                     }} 
-                     className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                     disabled={!editModeGeneral}
-                   />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div>
+                      <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Primary Email</label>
+                      <Input 
+                        value={formData.emails[0] || ""} 
+                        onChange={(e) => {
+                          const newEmails = [...formData.emails];
+                          newEmails[0] = e.target.value;
+                          setFormData({...formData, emails: newEmails});
+                        }} 
+                        className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeGeneral}
+                      />
+                   </div>
+                   <div>
+                      <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Secondary Email</label>
+                      <Input 
+                        value={formData.emails[1] || ""} 
+                        onChange={(e) => {
+                          const newEmails = [...formData.emails];
+                          newEmails[1] = e.target.value;
+                          setFormData({...formData, emails: newEmails});
+                        }} 
+                        className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
+                        disabled={!editModeGeneral}
+                      />
+                   </div>
                 </div>
                 <div>
                    <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Address</label>
@@ -317,8 +334,8 @@ export function SettingsTab() {
                         disabled={!editModeIntegrations}
                       />
                    </div>
-                </div>
-             </Card>
+                 </div>
+              </Card>
           </div>
        </div>
     </div>

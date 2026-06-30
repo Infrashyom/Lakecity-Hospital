@@ -19,7 +19,7 @@ export const authFetch = async (url: string, options: RequestInit = {}) => {
   if (response.status === 401) {
     // Token expired or invalid
     localStorage.removeItem("admin_token");
-    window.location.href = "/admin"; // Redirect to login
+    window.location.href = "/admin/login"; // Redirect to login
   }
 
   return response;
