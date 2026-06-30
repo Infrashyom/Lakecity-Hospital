@@ -1,9 +1,10 @@
-import { authFetch } from "@/src/lib/authFetch.js";
-import React, { useState } from "react";
-import { Plus, Building2, FileText, Edit, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
+import { authFetch } from "@/src/lib/authFetch.js";
+import { Building2, Edit, FileText, Plus, X } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boolean; onClose: () => void; onSave: (dept: any) => void; editingDept?: any }) {
   const [formData, setFormData] = useState(editingDept || {
@@ -82,7 +83,7 @@ function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boo
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={() => {
             if (!formData.name?.trim()) {
-              alert("Department Name is required.");
+              toast.error("Department Name is required.");
               return;
             }
             onSave(formData);

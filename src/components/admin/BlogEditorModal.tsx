@@ -122,7 +122,7 @@ const editorExtensions = [
 
 export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOpen: boolean; onClose: () => void; onSave: (blog: any) => void; editingBlog?: any }) {
   const [formData, setFormData] = useState({
-    title: "", author: "Admin", content: "", description: "", isPublished: true, image: "", seoTitle: "", seoDescription: ""
+    title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: ""
   });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,7 +147,6 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
         author: editingBlog.author || "Admin",
         content: editingBlog.content || "",
         description: editingBlog.description || editingBlog.excerpt || editingBlog.summary || "",
-        isPublished: editingBlog.isPublished ?? true,
         image: editingBlog.image || "",
         seoTitle: editingBlog.seoTitle || "",
         seoDescription: editingBlog.seoDescription || ""
@@ -158,7 +157,7 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
       }
     } else {
       const newFormData = { 
-        title: "", author: "Admin", content: "", description: "", isPublished: true, image: "", seoTitle: "", seoDescription: ""
+        title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: ""
       };
       setFormData(newFormData);
       if (editor && !editor.isDestroyed) {
@@ -301,10 +300,10 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
           <Button variant="outline" className="h-11 px-6 shadow-none" onClick={onClose}>Cancel</Button>
           <Button className="h-11 px-8 shadow-sm" disabled={isUploading} onClick={() => {
              if (!formData.title.trim() || !formData.content.trim()) {
-               alert("Title and content are mandatory fields.");
+               toast.error("Title and content are mandatory fields.");
                return;
              }
-             onSave({...formData, isPublished: true});
+             onSave(formData);
           }}>Save Article</Button>
         </div>
       </Card>

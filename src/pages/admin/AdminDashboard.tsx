@@ -1,6 +1,7 @@
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { AdminSidebar, AdminTab } from "@/src/components/admin/AdminSidebar";
 import { BlogEditorModal } from "@/src/components/admin/BlogEditorModal";
+import { ReviewEditorModal } from "@/src/components/admin/ReviewEditorModal";
 import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
 import { ImageUpload } from "@/src/components/admin/ImageUpload";
 import { DepartmentsTab } from "@/src/components/admin/tabs/DepartmentsTab";
@@ -218,6 +219,9 @@ export function AdminDashboard() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any>(null);
+  
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<any>(null);
 
   const [banConfirmDoctor, setBanConfirmDoctor] = useState<any | null>(null);
   const [deleteConfirmAppointmentId, setDeleteConfirmAppointmentId] = useState<string | null>(null);
@@ -225,6 +229,8 @@ export function AdminDashboard() {
 
   const [apptSearchTerm, setApptSearchTerm] = useState("");
   const [apptFilterStatus, setApptFilterStatus] = useState("All");
+  const [apptPage, setApptPage] = useState(1);
+  const itemsPerPage = 10;
 
   const navigate = useNavigate();
 
@@ -367,18 +373,21 @@ export function AdminDashboard() {
 
   const exportAppointmentsCSV = () => {
     const headers = "Patient Name,Phone,Email,Doctor,Department,Date,Time,Status\n";
-    const rows = filteredAppointments.map(a => 
-      `"${a.patientName || ""}","${a.phone || ""}","${a.email || ""}","${a.doctorId?.name || 'Any Available'}","${a.department || 'General'}","${new Date(a.date).toLocaleDateString()}","${a.time}","${a.status}"`
+    const rows = appointments.map(a => 
+      `"${a.patientName || ""}","${a.phone || ""}","${a.email || ""}","${a.doctorId?.name || 'Any Available'}","${a.department?.name || 'General'}","${new Date(a.date).toLocaleDateString()}","${a.time}","${a.status}"`
     ).join("\n");
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "appointments.csv");
+    link.setAttribute("download", "patients_appointments.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  const paginatedAppointments = filteredAppointments.slice((apptPage - 1) * itemsPerPage, apptPage * itemsPerPage);
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
 
   const handleSaveDoctor = async (docData: any) => {
     try {
@@ -476,6 +485,53 @@ export function AdminDashboard() {
     }
   };
 
+  const handleSaveReview = async (reviewData: any) => {
+    try {
+      const method = editingReview ? "PUT" : "POST";
+      const url = editingReview ? `/api/reviews/${editingReview._id || editingReview.id}` : `/api/reviews`;
+      
+      const payload = { ...reviewData, status: "approved" };
+
+      const response = await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        fetchReviews();
+        setIsReviewModalOpen(false);
+        setEditingReview(null);
+        toast.success(editingReview ? "Review updated" : "Review added");
+      } else {
+        toast.error("Failed to save review");
+      }
+    } catch (error) {
+      console.error("Error saving review:", error);
+      toast.error("An error occurred");
+    }
+  };
+
+  const [deleteConfirmReviewId, setDeleteConfirmReviewId] = useState<string | null>(null);
+
+  const handleDeleteReview = async () => {
+    if (!deleteConfirmReviewId) return;
+    try {
+      const response = await authFetch(`/api/reviews/${deleteConfirmReviewId}`, { method: "DELETE" });
+      if (response.ok) {
+        fetchReviews();
+        toast.success("Review deleted");
+      } else {
+        toast.error("Failed to delete review");
+      }
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      toast.error("An error occurred");
+    } finally {
+      setDeleteConfirmReviewId(null);
+    }
+  };
+
   const handleDeleteBlog = async () => {
     if (!deleteConfirmBlogId) return;
     try {
@@ -503,10 +559,11 @@ export function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8 w-full max-w-[100vw]">
         <AdminHeader 
-          title={activeTab === 'content' ? 'Blog Manager' : activeTab === 'media' ? 'Media Gallery' : activeTab === 'tour' ? 'Virtual Tour' : activeTab} 
+          title={activeTab === 'content' ? 'Blog Manager' : activeTab === 'media' ? 'Media Gallery' : activeTab === 'tour' ? 'Virtual Tour' : activeTab === 'reviews' ? 'Reviews Manager' : activeTab} 
           onAddClick={
             activeTab === 'doctors' ? () => { setEditingDoctor(null); setIsDoctorModalOpen(true); } :
             activeTab === 'content' ? () => { setEditingBlog(null); setIsBlogModalOpen(true); } : 
+            activeTab === 'reviews' ? () => { setEditingReview(null); setIsReviewModalOpen(true); } : 
             undefined
           }
           addLabel={activeTab === 'content' ? 'Write Article' : 'Add New'}
@@ -526,6 +583,13 @@ export function AdminDashboard() {
           onClose={() => { setIsBlogModalOpen(false); setEditingBlog(null); }}
           onSave={handleSaveBlog}
           editingBlog={editingBlog}
+        />
+
+        <ReviewEditorModal
+          isOpen={isReviewModalOpen}
+          onClose={() => { setIsReviewModalOpen(false); setEditingReview(null); }}
+          onSave={handleSaveReview}
+          editingReview={editingReview}
         />
 
         {activeTab === "dashboard" && (
@@ -582,65 +646,35 @@ export function AdminDashboard() {
 
         {activeTab === "appointments" && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
-              <Card glass className="bg-white border-none shadow-sm">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
-                    <Calendar className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Total Visits</p>
-                    <p className="text-2xl font-bold">{appointments.length}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card glass className="bg-white border-none shadow-sm">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0">
-                    <Clock className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">New</p>
-                    <p className="text-2xl font-bold">{appointments.filter(a => a.status === 'New').length}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card glass className="bg-white border-none shadow-sm">
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Completed</p>
-                    <p className="text-2xl font-bold">{appointments.filter(a => a.status === 'Completed').length}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <Card className="border-none shadow-sm bg-white overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h3 className="font-bold text-slate-800">Recent Appointments</h3>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="w-full sm:w-72">
                   <Input 
                     placeholder="Search patient or phone..." 
                     value={apptSearchTerm}
-                    onChange={(e) => setApptSearchTerm(e.target.value)}
-                    className="h-9 w-full sm:w-64" 
+                    onChange={(e) => {
+                      setApptSearchTerm(e.target.value);
+                      setApptPage(1);
+                    }}
+                    className="h-9 w-full" 
                   />
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
                   <select 
                     className="h-9 rounded-md border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-primary outline-none"
                     value={apptFilterStatus}
-                    onChange={(e) => setApptFilterStatus(e.target.value)}
+                    onChange={(e) => {
+                      setApptFilterStatus(e.target.value);
+                      setApptPage(1);
+                    }}
                   >
                     <option value="All">All Status</option>
-                    <option value="New">New</option>
+                    <option value="Pending">Pending</option>
                     <option value="Confirmed">Confirmed</option>
-                    <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>
                   <Button size="sm" className="gap-2 shrink-0" onClick={exportAppointmentsCSV}>
-                    Export CSV
+                    Export Excel
                   </Button>
                 </div>
               </div>
@@ -648,78 +682,67 @@ export function AdminDashboard() {
                 <table className="w-full text-left whitespace-nowrap">
                   <thead className="bg-slate-50 text-slate-500 text-sm uppercase">
                     <tr>
-                      <th className="px-6 py-4 font-medium">Patient</th>
-                      <th className="px-6 py-4 font-medium">Contact</th>
-                      <th className="px-6 py-4 font-medium">Doctor / Dept</th>
-                      <th className="px-6 py-4 font-medium">Date & Time</th>
-                      <th className="px-6 py-4 font-medium">Status</th>
-                      <th className="px-6 py-4 font-medium text-right">Action</th>
+                      <th className="px-8 py-5 font-medium">Patient</th>
+                      <th className="px-8 py-5 font-medium">Contact</th>
+                      <th className="px-8 py-5 font-medium">Doctor / Dept</th>
+                      <th className="px-8 py-5 font-medium">Date & Time</th>
+                      <th className="px-8 py-5 font-medium">Status</th>
+                      <th className="px-8 py-5 font-medium text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredAppointments.map((appt, i) => (
+                    {paginatedAppointments.map((appt, i) => (
                       <tr key={i} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                            <p className="font-bold text-slate-900 truncate max-w-[150px] sm:max-w-xs">{appt.patientName}</p>
-                           <p className="text-xs text-slate-500 mt-1 cursor-pointer hover:text-primary transition-colors hover:underline">Add Note</p>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                            <div className="flex flex-col gap-1 text-sm text-slate-600">
                              <a href={`tel:${appt.phone}`} className="hover:text-primary">{appt.phone}</a>
                              <a href={`mailto:${appt.email}`} className="text-xs">{appt.email}</a>
                            </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <p className="text-slate-900 font-medium">{appt.doctorId?.name || "Any Available"}</p>
-                          <p className="text-xs text-slate-500">{appt.department || "General"}</p>
+                        <td className="px-8 py-5">
+                          <p className="text-slate-900 font-medium">{appt.doctorId?.name || "-"}</p>
+                          <p className="text-sm text-slate-500">{appt.department?.name || "-"}</p>
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td className="px-8 py-5 text-sm text-slate-600">
                           {new Date(appt.date).toLocaleDateString()} <br/>
                           <span className="font-medium text-slate-800">{appt.time}</span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           <select 
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase select-none cursor-pointer outline-none border-2 border-transparent focus:border-slate-300 ${
-                              appt.status === 'Confirmed' ? 'bg-blue-100 text-blue-600' :
-                              appt.status === 'Completed' ? 'bg-green-100 text-green-600' :
-                              appt.status === 'New' ? 'bg-orange-100 text-orange-600' :
-                              appt.status === 'Cancelled' ? 'bg-red-100 text-red-600' :
-                              'bg-slate-100 text-slate-600'
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase select-none cursor-pointer outline-none border focus:ring-2 focus:ring-offset-1 transition-colors ${
+                              appt.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500/20' :
+                              appt.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500/20' :
+                              appt.status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200 focus:ring-rose-500/20' :
+                              'bg-slate-50 text-slate-700 border-slate-200 focus:ring-slate-500/20'
                             }`}
                             value={appt.status}
                             onChange={(e) => handleStatusChange(appt._id, e.target.value)}
                           >
-                            <option value="New">New</option>
+                            <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
-                            <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-8 py-5 text-right">
                           <div className="flex justify-end gap-2">
                              <Button
                                variant="outline"
-                               size="icon"
-                               className="text-green-600 border-green-200 hover:bg-green-50"
+                               size="sm"
+                               className="text-green-600 border-green-200 hover:bg-green-50 gap-2"
                                onClick={() => window.open(`https://wa.me/${appt.phone.replace(/\D/g,'')}`, '_blank')}
                              >
-                                <MessageSquare className="w-4 h-4" />
-                             </Button>
-                             <Button 
-                               variant="ghost" 
-                               size="icon" 
-                               className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                               onClick={() => setDeleteConfirmAppointmentId(appt._id)}
-                             >
-                               <Trash2 className="w-4 h-4" />
+                                <MessageSquare className="w-4 h-4" /> Message
                              </Button>
                           </div>
                         </td>
                       </tr>
                     ))}
-                    {appointments.length === 0 && !isLoading && (
+                    {filteredAppointments.length === 0 && !isLoading && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-20 text-center text-slate-400">
+                        <td colSpan={6} className="px-6 py-20 text-center text-slate-400">
                           No appointments found.
                         </td>
                       </tr>
@@ -727,6 +750,31 @@ export function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+                  <p className="text-sm text-slate-500">
+                    Showing <span className="font-medium">{(apptPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(apptPage * itemsPerPage, filteredAppointments.length)}</span> of <span className="font-medium">{filteredAppointments.length}</span> results
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setApptPage(p => Math.max(1, p - 1))}
+                      disabled={apptPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setApptPage(p => Math.min(totalPages, p + 1))}
+                      disabled={apptPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         )}
@@ -825,12 +873,6 @@ export function AdminDashboard() {
                           <span>{new Date(post.createdAt || Date.now()).toLocaleDateString()}</span>
                           <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                           <span>{post.author || "ADMIN"}</span>
-                          {!post.isPublished && (
-                            <>
-                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                              <span className="text-orange-600">DRAFT</span>
-                            </>
-                          )}
                         </div>
                         
                         <div className="flex items-center gap-1">
@@ -878,20 +920,10 @@ export function AdminDashboard() {
 
         {activeTab === "reviews" && (
           <ReviewsTab 
-            reviews={reviews} 
-            onUpdate={async (id, updates) => {
-              try {
-                const res = await authFetch(`/api/reviews/${id}`, {
-                  method: 'PUT',
-                  body: JSON.stringify(updates)
-                });
-                if(res.ok) {
-                   fetchReviews();
-                }
-              } catch(e) {
-                console.error("Failed to update review", e);
-              }
-            }} 
+            reviews={reviews}
+            fetchReviews={fetchReviews}
+            onEdit={(review) => { setEditingReview(review); setIsReviewModalOpen(true); }}
+            onDelete={(id) => setDeleteConfirmReviewId(id)}
           />
         )}
 
@@ -920,6 +952,13 @@ export function AdminDashboard() {
             </div>
           </div>
         )}
+        <ConfirmModal
+          isOpen={!!deleteConfirmReviewId}
+          title="Delete Testimonial"
+          message="Are you sure you want to delete this testimonial? This action cannot be undone."
+          onConfirm={handleDeleteReview}
+          onCancel={() => setDeleteConfirmReviewId(null)}
+        />
       </main>
 
       {/* Change Password Modal */}

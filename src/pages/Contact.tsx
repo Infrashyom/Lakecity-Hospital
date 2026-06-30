@@ -32,12 +32,6 @@ export function Contact() {
                 {settings?.contactNumbers?.filter(Boolean).map((number, idx) => (
                   <p key={idx} className="text-slate-900">{idx === 0 ? 'Emergency: ' : 'Helpline: '}<span className={idx === 0 ? "text-danger" : ""}>{number}</span></p>
                 ))}
-                {(!settings?.contactNumbers || settings.contactNumbers.filter(Boolean).length === 0) && (
-                  <>
-                    <p className="text-slate-900">Emergency: <span className="text-danger">1066</span></p>
-                    <p className="text-slate-900">Helpline: 1800-123-4567</p>
-                  </>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -53,9 +47,6 @@ export function Contact() {
                 {settings?.emails?.filter(Boolean).map((email, idx) => (
                   <p key={idx} className="text-slate-900"><a href={`mailto:${email}`}>{email}</a></p>
                 ))}
-                {(!settings?.emails || settings.emails.filter(Boolean).length === 0) && (
-                  <p className="text-slate-900"><a href="mailto:info@lakecityhospital.com">info@lakecityhospital.com</a></p>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -70,13 +61,7 @@ export function Contact() {
               <p className="text-slate-900 font-medium">
                 {settings?.address ? (
                   settings.address.split('\n').map((line, idx) => <React.Fragment key={idx}>{line}<br/></React.Fragment>)
-                ) : (
-                  <>
-                    B-27, Near Chetak Bridge,<br />
-                    Sector B, Kasturba Nagar,<br />
-                    Bhopal, MP
-                  </>
-                )}
+                ) : null}
               </p>
             </CardContent>
           </Card>
@@ -131,13 +116,7 @@ export function Contact() {
                   <p className="text-slate-600 text-sm leading-relaxed">
                     {settings?.address ? (
                       settings.address.split('\n').map((line, idx) => <React.Fragment key={idx}>{line}<br/></React.Fragment>)
-                    ) : (
-                      <>
-                        B-27, Near Chetak Bridge,<br />
-                        Sector B, Kasturba Nagar,<br />
-                        Bhopal, Madhya Pradesh
-                      </>
-                    )}
+                    ) : null}
                   </p>
                 </div>
               </div>

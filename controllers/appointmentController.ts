@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import Appointment from "../models/Appointment.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
@@ -11,7 +11,7 @@ export const createAppointment = catchAsync(async (req: Request, res: Response, 
 
 // Get all appointments (for admin/portal)
 export const getAppointments = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const appointments = await Appointment.find().populate("doctorId");
+  const appointments = await Appointment.find().populate("doctorId").populate("department");
   res.status(200).json(appointments);
 });
 

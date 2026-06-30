@@ -1,17 +1,18 @@
-import { authFetch } from "@/src/lib/authFetch.js";
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/src/components/ui/Button";
 import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
+import { Button } from "@/src/components/ui/Button";
+import { authFetch } from "@/src/lib/authFetch.js";
 import {
-  ImageIcon,
-  FileText,
-  Plus,
   Edit,
-  Trash2,
-  Loader2,
-  UploadCloud,
+  Eye,
+  FileText,
   Home,
+  ImageIcon,
+  Loader2,
+  Plus,
+  Star,
+  Trash2
 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -26,6 +27,9 @@ export function MediaGalleryTab() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ id: string; url: string } | null>(null);
+
+
+  const [uploadModal, setUploadModal] = useState<{ isOpen: boolean; file: File | null; title: string }>({ isOpen: false, file: null, title: '' });
 
   const fetchMedia = async () => {
     try {
@@ -58,15 +62,30 @@ export function MediaGalleryTab() {
 
   const activeMedia = media.filter((m) => m.category === activeFolder);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement> | any) => {
+    let files;
+    if (e.target && e.target.files) {
+      files = e.target.files;
+    } else if (e.dataTransfer && e.dataTransfer.files) {
+      files = e.dataTransfer.files;
+    }
+    
     if (!files || files.length === 0) return;
 
+    const file = files[0];
+    const defaultTitle = file.name.replace(/\.[^/.]+$/, "");
+    setUploadModal({ isOpen: true, file, title: defaultTitle });
+  };
+
+  const processUpload = async () => {
+    if (!uploadModal.file) return;
+
     setIsUploading(true);
+    setUploadModal({ ...uploadModal, isOpen: false });
 
     try {
       const formData = new FormData();
-      formData.append("image", files[0]);
+      formData.append("image", uploadModal.file);
 
       const uploadRes = await authFetch("/api/upload", {
         method: "POST",
@@ -86,7 +105,7 @@ export function MediaGalleryTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "media",
-          title: files[0].name || "Uploaded Image",
+          title: uploadModal.title || uploadModal.file.name,
           image: imageUrl,
           category: activeFolder,
         }),
@@ -98,13 +117,12 @@ export function MediaGalleryTab() {
       } else {
         toast.error("Failed to save image record.");
       }
-
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Upload failed", error);
       toast.error("Failed to upload image.");
+    } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -162,96 +180,35 @@ export function MediaGalleryTab() {
                 <FileText className="w-4 h-4" />
                 <span className="text-sm">{cat}</span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-slate-400 hover:text-primary shrink-0"
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  const newName = prompt("Enter new folder name:", cat);
-                  if (newName && newName.trim() !== "" && newName !== cat) {
-                    const finalName = newName.trim();
-                    const updatedFolders = [...folders];
-                    updatedFolders[i] = finalName;
-                    setFolders(updatedFolders);
-                    if (activeFolder === cat) {
-                      setActiveFolder(finalName);
-                    }
 
-                    // Update all media in this category
-                    const itemsToUpdate = media.filter(
-                      (m) => m.category === cat,
-                    );
-                    if (itemsToUpdate.length > 0) {
-                      const tasks = itemsToUpdate.map((m) =>
-                        authFetch(`/api/content/${m._id || m.id}`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ category: finalName }),
-                        }),
-                      );
-                      await Promise.all(tasks);
-                      fetchMedia();
-                    }
-                  }
-                }}
-              >
-                <Edit className="w-3 h-3" />
-              </Button>
             </div>
           ))}
-          <div className="mt-4 pt-4 border-t border-slate-100 px-2 flex">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary text-xs flex-1 border border-dashed border-primary/30"
-              onClick={() => {
-                const name = prompt("Enter new folder name:");
-                if (name) setFolders([...folders, name]);
-              }}
-            >
-              + New Folder
-            </Button>
-          </div>
+
         </div>
 
         <div className="lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-4">
+              <Button 
+                onClick={() => fileInputRef.current?.click()}
+                className="gap-2"
+                disabled={isUploading}
+              >
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Add Media
+              </Button>
+              <div className="flex items-center gap-2 text-sm font-medium text-danger bg-danger/10 px-3 py-1.5 rounded-lg border border-danger/20">
+                <ImageIcon className="w-4 h-4" /> Home Images: {media.filter(m => m.showOnHome).length}/6
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
               <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" /> {activeFolder}
               </h3>
-              <span className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded border border-primary/20 flex items-center gap-1" title="The home page gallery layout requires up to 6 images">
-                <Home className="w-3.5 h-3.5" /> Home Page Layout: {media.filter(m => m.showOnHome).length} / 6 Assigned
+              <span className="text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
+                {activeMedia.length} files
               </span>
             </div>
-            <span className="text-sm font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
-              {activeMedia.length} files
-            </span>
-          </div>
-
-          {/* Drag drop zone */}
-          <div
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-8 text-center mb-6 cursor-pointer transition-colors ${isUploading ? "border-primary/50 bg-primary/5" : "border-slate-200 bg-slate-50 hover:bg-slate-100"}`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
-              {isUploading ? (
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              ) : (
-                <Plus className="w-5 h-5 text-primary" />
-              )}
-            </div>
-            <p className="text-sm font-bold text-slate-700">
-              {isUploading
-                ? "Uploading to Cloudinary..."
-                : "Click to upload or drag and drop"}
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              SVG, PNG, JPG or GIF (max. 5MB)
-            </p>
           </div>
 
           {activeMedia.length === 0 ? (
@@ -263,24 +220,32 @@ export function MediaGalleryTab() {
               {activeMedia.map((file, i) => (
                 <div
                   key={file._id || i}
-                  className="group relative aspect-square rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-100"
+                  className="group relative aspect-video rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900"
                 >
                   <img
                     src={file.image}
                     alt={file.title || `Media ${i}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button
-                      size="icon"
-                      variant="outline"
+                  
+                  {/* Gradient overlay for readability */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent opacity-100" />
+                  
+                  {/* Bottom text */}
+                  <div className="absolute bottom-3 left-4 right-4 text-white z-10">
+                    <p className="font-medium text-sm truncate">{file.title || "Image"}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/80 mt-0.5">{file.category}</p>
+                  </div>
+
+                  {/* Fixed Star Icon (Top Right) */}
+                  <div className="absolute top-3 right-3 z-20">
+                    <button
                       title={file.showOnHome ? "Remove from Home Page" : "Show on Home Page"}
-                      className={`h-8 w-8 text-white hover:bg-white/20 ${file.showOnHome ? 'bg-primary border-primary' : 'border-white bg-transparent'}`}
                       onClick={async (e) => {
                         e.stopPropagation();
                         if (!file.showOnHome && media.filter(m => m.showOnHome).length >= 6) {
-                          alert("Maximum 6 images can be shown on the home page gallery layout. Please remove one first.");
+                          toast.error("Maximum 6 images can be shown on the home page gallery layout. Please remove one first.");
                           return;
                         }
                         try {
@@ -294,32 +259,34 @@ export function MediaGalleryTab() {
                           console.error(err);
                         }
                       }}
+                      className={`p-1.5 rounded-full backdrop-blur-md transition-colors ${file.showOnHome ? 'bg-yellow-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'}`}
                     >
-                      <Home className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      title="View Full Image"
-                      className="h-8 w-8 text-white border-white bg-transparent hover:bg-white/20"
+                      <Star className={`w-4 h-4 ${file.showOnHome ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
+
+                  {/* Hover Actions (Center) */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 z-10">
+                    <button
+                      title="View Image"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(file.image, "_blank");
                       }}
+                      className="p-3 rounded-full bg-white text-primary hover:bg-slate-50 transition-colors shadow-lg transform hover:scale-110"
                     >
-                      <ImageIcon className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="danger"
-                      className="h-8 w-8 text-white border-none"
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
+                      title="Delete"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteConfirmTarget({ id: file._id || file.id, url: file.image });
                       }}
+                      className="p-3 rounded-full bg-white text-danger hover:bg-red-50 transition-colors shadow-lg transform hover:scale-110"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -336,6 +303,34 @@ export function MediaGalleryTab() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteConfirmTarget(null)}
       />
+
+
+      {uploadModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Set Image Title</h3>
+              <input 
+                type="text" 
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                value={uploadModal.title} 
+                onChange={e => setUploadModal({ ...uploadModal, title: e.target.value })} 
+                placeholder="Enter title for image"
+                autoFocus
+              />
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={() => {
+                  setUploadModal({ isOpen: false, file: null, title: '' });
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}>Cancel</Button>
+                <Button onClick={processUpload}>Upload</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }

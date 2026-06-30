@@ -152,22 +152,22 @@ export function Home() {
       </section>
 
       {/* Key Services */}
-      <section className="py-16 lg:py-24 bg-slate-50" aria-labelledby="centers-of-excellence">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div className="max-w-3xl">
-              <h2 id="centers-of-excellence" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Centers of Excellence</h2>
-              <p className="text-slate-700 text-lg">Comprehensive care across specialized departments, equipped with the latest medical technology.</p>
+      {departments.length > 0 && (
+        <section className="py-16 lg:py-24 bg-slate-50" aria-labelledby="centers-of-excellence">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <div className="max-w-3xl">
+                <h2 id="centers-of-excellence" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Centers of Excellence</h2>
+                <p className="text-slate-700 text-lg">Comprehensive care across specialized departments, equipped with the latest medical technology.</p>
+              </div>
+              <Link to="/departments" className="group inline-flex items-center gap-2 text-primary hover:text-primary-dark font-medium transition-colors shrink-0">
+                Explore All Departments 
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
-            <Link to="/departments" className="group inline-flex items-center gap-2 text-primary hover:text-primary-dark font-medium transition-colors shrink-0">
-              Explore All Departments 
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {departments.length > 0 ? (
-              departments.slice(0, 4).map((dept, i) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {departments.slice(0, 4).map((dept, i) => {
                 const { icon: Icon, color, bg } = getDepartmentIcon(dept.name);
                 return (
                   <motion.div
@@ -191,13 +191,11 @@ export function Home() {
                     </Link>
                   </motion.div>
                 );
-              })
-            ) : (
-              <p className="col-span-full text-center text-slate-500 py-10">Loading departments...</p>
-            )}
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Why Choose Us */}
       <section className="py-24 relative overflow-hidden bg-[#0a3138]" aria-labelledby="why-choose-us">

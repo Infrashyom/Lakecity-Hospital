@@ -18,8 +18,7 @@ export function Blog() {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data)) {
-            const publishedBlogs = data.filter((b: any) => b.isPublished);
-            setBlogs(publishedBlogs);
+            setBlogs(data);
           } else {
             setBlogs([]);
           }

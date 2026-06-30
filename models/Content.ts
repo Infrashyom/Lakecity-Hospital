@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IContent extends Document {
-  type: "blog" | "page" | "media" | "tour";
+  type: "blog" | "media" | "tour";
   title?: string;
   name?: string;
   slug?: string;
@@ -10,14 +10,12 @@ export interface IContent extends Document {
   description?: string;
   category?: string;
   author?: string;
-  views?: number;
-  isPublished?: boolean;
   showOnHome?: boolean;
   hotspots?: any[];
 }
 
 const ContentSchema: Schema = new Schema({
-  type: { type: String, enum: ["blog", "page", "media", "tour"], required: true },
+  type: { type: String, enum: ["blog", "media", "tour"], required: true },
   title: { type: String },
   name: { type: String },
   slug: { type: String, unique: false, sparse: true },
@@ -26,10 +24,8 @@ const ContentSchema: Schema = new Schema({
   description: { type: String },
   category: { type: String },
   author: { type: String },
-  views: { type: Number, default: 0 },
-  isPublished: { type: Boolean, default: false },
   showOnHome: { type: Boolean, default: false },
-  hotspots: { type: Array, default: [] },
+  hotspots: { type: Array, default: function(this: any) { return this.type === 'tour' ? [] : undefined; } },
 }, { timestamps: true });
 
 export default mongoose.model<IContent>("Content", ContentSchema);

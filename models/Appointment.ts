@@ -1,32 +1,32 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IAppointment extends Document {
   patientName: string;
-  email: string;
+  age: number;
+  email?: string;
   phone: string;
-  doctorId: mongoose.Types.ObjectId;
-  department?: string;
+  doctorId?: mongoose.Types.ObjectId;
+  department?: mongoose.Types.ObjectId;
   date: Date;
   time: string;
   reason: string;
-  notes?: string;
-  status: "New" | "Called" | "Confirmed" | "Completed" | "Cancelled" | "No Response";
+  status: "Pending" | "Confirmed" | "Cancelled";
 }
 
 const AppointmentSchema: Schema = new Schema({
   patientName: { type: String, required: true },
-  email: { type: String, required: true },
+  age: { type: Number, required: true },
+  email: { type: String, required: false },
   phone: { type: String, required: true },
-  doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
-  department: { type: String, default: "General" },
+  doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: false },
+  department: { type: Schema.Types.ObjectId, ref: "Department" },
   date: { type: Date, required: true },
   time: { type: String, required: true },
   reason: { type: String, required: true },
-  notes: { type: String, default: "" },
   status: { 
     type: String, 
-    enum: ["New", "Called", "Confirmed", "Completed", "Cancelled", "No Response"], 
-    default: "New" 
+    enum: ["Pending", "Confirmed", "Cancelled"], 
+    default: "Pending" 
   },
 }, { timestamps: true });
 

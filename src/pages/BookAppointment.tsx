@@ -6,6 +6,7 @@ import { Calendar, CheckCircle2, Clock, FileText, Loader2, Mail, Phone, User } f
 import { motion } from "motion/react";
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export function BookAppointment() {
   const [searchParams] = useSearchParams();
@@ -71,7 +72,7 @@ export function BookAppointment() {
         setFormData(prev => ({
           ...prev,
           doctorId: (doctor._id || doctor.id).toString(),
-          department: doctor.specialty.toLowerCase()
+          department: doctor.department?._id || doctor.department?.id || doctor.department || ""
         }));
       }
     }
@@ -84,33 +85,60 @@ export function BookAppointment() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validations
+    if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
+      toast.error("Invalid Phone Number", {
+        description: "Please enter a valid 10-digit phone number."
+      });
+      return;
+    }
+    
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error("Invalid Email Address", {
+        description: "Please enter a valid email address containing an @ symbol."
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      const payload: any = {
+        patientName: formData.patientName,
+        age: Number(formData.age),
+        phone: formData.phone,
+        date: formData.date,
+        time: formData.timeSlot,
+        reason: formData.reason
+      };
+      
+      if (formData.email) {
+        payload.email = formData.email;
+      }
+      
+      if (formData.doctorId) {
+        payload.doctorId = formData.doctorId;
+      }
+      if (formData.department) {
+        payload.department = formData.department;
+      }
+
       const response = await fetch("/api/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patientName: formData.patientName,
-          email: formData.email,
-          phone: formData.phone,
-          doctorId: formData.doctorId,
-          date: formData.date,
-          time: formData.timeSlot,
-          reason: formData.reason
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
         setIsSubmitted(true);
       } else {
-        const err = await response.json();
-        alert(`Error: ${err.message || "Failed to book appointment"}`);
+        const err = await response.json().catch(() => ({}));
+        toast.error(err.message || err.error || "Failed to book appointment. Please try again or call us directly.");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      // Fallback for demo
-      setTimeout(() => setIsSubmitted(true), 1500);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -142,6 +170,13 @@ export function BookAppointment() {
       </div>
     );
   }
+
+  const filteredDoctors = formData.department
+    ? doctors.filter(doc => {
+        const docDeptId = doc.department?._id || doc.department?.id || doc.department;
+        return docDeptId === formData.department;
+      })
+    : doctors;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -198,9 +233,11 @@ export function BookAppointment() {
                       required 
                       name="phone"
                       type="tel" 
+                      pattern="[0-9]{10}"
+                      title="Please enter a valid 10-digit phone number"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      placeholder="+91 98765 43210" 
+                      placeholder="9876543210" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -208,7 +245,6 @@ export function BookAppointment() {
                       <Mail className="w-4 h-4 text-primary" /> Email Address
                     </label>
                     <Input 
-                      required 
                       name="email"
                       type="email" 
                       value={formData.email}
@@ -250,7 +286,7 @@ export function BookAppointment() {
                     >
                       <option value="">Select Department</option>
                       {departments.map((dept) => (
-                        <option key={dept._id || dept.name} value={dept.name.toLowerCase()}>{dept.name}</option>
+                        <option key={dept._id || dept.name} value={dept._id || dept.id}>{dept.name}</option>
                       ))}
                     </select>
                   </div>
@@ -265,7 +301,7 @@ export function BookAppointment() {
                       onChange={handleInputChange}
                     >
                       <option value="">Any Available Doctor</option>
-                      {doctors.map(doc => (
+                      {filteredDoctors.map(doc => (
                         <option key={doc._id || doc.id} value={doc._id || doc.id}>
                           {doc.name} ({doc.specialty})
                         </option>
@@ -296,24 +332,27 @@ export function BookAppointment() {
                       onChange={handleInputChange}
                     >
                       <option value="">Select Time Slot</option>
-                      <option value="morning">Morning (9 AM - 12 PM)</option>
-                      <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
-                      <option value="evening">Evening (4 PM - 8 PM)</option>
+                      <option value="Morning (9 AM - 12 PM)">Morning (9 AM - 12 PM)</option>
+                      <option value="Afternoon (12 PM - 4 PM)">Afternoon (12 PM - 4 PM)</option>
+                      <option value="Evening (4 PM - 8 PM)">Evening (4 PM - 8 PM)</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-primary" /> Symptoms / Reason for Visit
-                  </label>
-                  <textarea 
-                    name="reason"
-                    value={formData.reason}
-                    onChange={handleInputChange}
-                    className="flex min-h-[120px] w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all resize-none"
-                    placeholder="Briefly describe your symptoms or reason for appointment..."
-                  />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-primary" /> Symptoms / Reason for Visit
+                    </label>
+                    <textarea 
+                      required
+                      name="reason"
+                      value={formData.reason}
+                      onChange={handleInputChange}
+                      className="flex min-h-[100px] w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all resize-none"
+                      placeholder="Briefly describe your symptoms or reason for appointment..."
+                    />
+                  </div>
                 </div>
 
                 <Button disabled={isLoading} type="submit" size="lg" className="w-full h-14 text-lg">

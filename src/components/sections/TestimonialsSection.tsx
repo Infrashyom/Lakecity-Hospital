@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Star } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/Card";
+import { Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -9,9 +9,8 @@ export function TestimonialsSection() {
     fetch("/api/reviews")
       .then(res => res.json())
       .then(data => {
-        const featured = data.filter((r: any) => r.isFeatured);
-        if (featured.length > 0) {
-          setReviews(featured);
+        if (data.length > 0) {
+          setReviews(data);
         } else {
           setReviews([]);
         }
@@ -19,30 +18,13 @@ export function TestimonialsSection() {
       .catch(err => console.error(err));
   }, []);
 
-  const baseItems = reviews.length > 0 ? reviews : [
-    {
-      patientName: "Sarah Jenkins",
-      departmentOrDoctor: "Cancer Care Patient",
-      rating: 5,
-      comment: "The oncology care I received at Lake City Hospital was exceptional. The doctors were patient, explained everything clearly, and the staff was incredibly supportive during my chemotherapy."
-    },
-    {
-      patientName: "Michael Chen",
-      departmentOrDoctor: "Reconstructive Surgery Patient",
-      rating: 5,
-      comment: "After a severe burn, they not only provided advanced Burn ICU care but Dr. Kale's reconstructive surgery gave me my life back. Truly grateful for their expertise."
-    },
-    {
-      patientName: "Emily Rodriguez",
-      departmentOrDoctor: "Maternity & Gynecology",
-      rating: 5,
-      comment: "Bringing my first child into the world was daunting, but the maternity staff made it a beautiful experience. The women’s care facilities are top-notch in Bhopal."
-    }
-  ];
+  if (reviews.length === 0) {
+    return null;
+  }
 
-  let solidBase = [...baseItems];
+  let solidBase = [...reviews];
   while (solidBase.length < 5) {
-    solidBase = [...solidBase, ...baseItems];
+    solidBase = [...solidBase, ...reviews];
   }
 
   // Duplicate exactly once for seamless 50% scroll
@@ -51,9 +33,14 @@ export function TestimonialsSection() {
   return (
     <section className="py-24 bg-white overflow-hidden" aria-labelledby="patient-stories">
       <div className="container mx-auto px-4 md:px-6 mb-12 relative z-10">
-        <div className="text-center max-w-3xl mx-auto">
-          <h2 id="patient-stories" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Patient Stories</h2>
-          <p className="text-slate-700 text-lg">Hear from those who have experienced our care firsthand.</p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <h2 id="patient-stories" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Patient Stories</h2>
+            <p className="text-slate-700 text-lg">Hear from those who have experienced our care firsthand.</p>
+          </div>
+          <a href="https://www.google.com/search?sca_esv=9e14c540528a302f&cs=0&output=search&kgmid=/g/125_xcsyw&q=Lake+City+Hospital+in+Bhopal&shem=epsd1,ltae,rimspwouoe&shndl=30&source=sh/x/loc/uni/m1/1&kgs=252346a2246dff97&utm_source=epsd1,ltae,rimspwouoe,sh/x/loc/uni/m1/1#lrd=0x397c4269de5329b5:0x99157f1479a85a84,1,,,," target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors gap-2">
+            Rate us on Google
+          </a>
         </div>
       </div>
 
@@ -79,7 +66,6 @@ export function TestimonialsSection() {
                     </div>
                     <div>
                       <h5 className="font-semibold text-slate-900 line-clamp-1">{testimonial.patientName}</h5>
-                      <p className="text-sm text-slate-600 line-clamp-1">{testimonial.departmentOrDoctor || 'Patient'}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -103,7 +89,6 @@ export function TestimonialsSection() {
                     </div>
                     <div>
                       <h5 className="font-semibold text-slate-900 line-clamp-1">{testimonial.patientName}</h5>
-                      <p className="text-sm text-slate-600 line-clamp-1">{testimonial.departmentOrDoctor || 'Patient'}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -120,6 +105,9 @@ export function TestimonialsSection() {
         }
         .animate-marquee {
           animation: marquee 30s linear infinite;
+        }
+        .group:hover .animate-marquee {
+          animation-play-state: paused;
         }
       `}</style>
     </section>

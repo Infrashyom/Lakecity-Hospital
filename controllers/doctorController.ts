@@ -5,13 +5,13 @@ import { catchAsync } from "../utils/catchAsync.js";
 
 // Get all doctors
 export const getDoctors = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const doctors = await Doctor.find();
+  const doctors = await Doctor.find().populate("department", "name");
   res.status(200).json(doctors);
 });
 
 // Get doctor by ID
 export const getDoctorById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const doctor = await Doctor.findById(req.params.id);
+  const doctor = await Doctor.findById(req.params.id).populate("department", "name");
   if (!doctor) {
     return next(new AppError("Doctor not found", 404));
   }

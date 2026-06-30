@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { ArrowRight, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
+import { ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export function MediaGallerySection() {
   const [media, setMedia] = useState<any[]>([]);
@@ -14,8 +14,8 @@ export function MediaGallerySection() {
         if (response.ok) {
           const data = await response.json();
           if (data.length > 0) {
-            const homeMedia = data.filter((m: any) => m.showOnHome).slice(0, 6);
-            setMedia(homeMedia);
+            const homeMedia = data.filter((m: any) => m.showOnHome);
+            setMedia(homeMedia.slice(0, 6));
           }
         }
       } catch (error) {
