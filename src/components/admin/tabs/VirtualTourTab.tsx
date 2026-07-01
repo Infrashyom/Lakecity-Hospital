@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/src/components/ui/Button";
 import { ConfirmModal } from "@/src/components/admin/ConfirmModal";
-import { Plus, Edit, Trash2, MapPin, UploadCloud, Loader2 } from "lucide-react";
+import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
 import { authFetch } from "@/src/lib/authFetch.js";
+import { Edit, Loader2, Plus, Trash2, UploadCloud } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function VirtualTourTab() {
@@ -45,7 +45,10 @@ export function VirtualTourTab() {
         body: formData,
       });
 
-      if (!uploadRes.ok) throw new Error("Upload failed");
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json();
+        throw new Error(errorData.message || "Upload failed");
+      }
 
       const uploadData = await uploadRes.json();
       setCurrentRoom((prev: any) => ({...prev, image: uploadData.data.url}));
@@ -53,9 +56,9 @@ export function VirtualTourTab() {
       
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload failed", error);
-      toast.error("Failed to upload image.");
+      toast.error(error.message || "Failed to upload image.");
       setIsUploading(false);
     }
   };
@@ -121,7 +124,7 @@ export function VirtualTourTab() {
               ref={fileInputRef} 
               onChange={handleFileUpload} 
               className="hidden" 
-              accept="image/png, image/jpeg, image/webp"
+              accept="image/png, image/jpeg, image/webp, image/heic, image/heif, .heic, .heif"
             />
             {currentRoom.image ? (
               <div className="relative w-32 h-20 rounded-md overflow-hidden bg-slate-100 border border-slate-200">

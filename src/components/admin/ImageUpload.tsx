@@ -17,9 +17,9 @@ export function ImageUpload({ value, onChange, className = "", label = "Image" }
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
 
-    // Check size, e.g. < 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image is too large. Max size is 5MB");
+    // Check size, e.g. < 20MB
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image is too large. Max size is 20MB");
       return;
     }
 
@@ -34,15 +34,16 @@ export function ImageUpload({ value, onChange, className = "", label = "Image" }
       });
 
       if (!res.ok) {
-        throw new Error("Upload failed");
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Upload failed");
       }
 
       const data = await res.json();
       onChange(data.data.url);
       toast.success("Image uploaded successfully");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Failed to upload image. Check server configuration.");
+      toast.error(err.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
     }
@@ -76,7 +77,7 @@ export function ImageUpload({ value, onChange, className = "", label = "Image" }
                  <span className="text-xs text-slate-500 font-medium group-hover:text-primary transition-colors">Click to upload</span>
                </div>
              )}
-             <input type="file" accept="image/*" onChange={handleUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
+             <input type="file" accept="image/*, image/heic, image/heif, .heic, .heif" onChange={handleUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
           </div>
         )}
       </div>

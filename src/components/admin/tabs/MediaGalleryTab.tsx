@@ -93,7 +93,8 @@ export function MediaGalleryTab() {
       });
 
       if (!uploadRes.ok) {
-        throw new Error("Cloudinary upload failed");
+        const errorData = await uploadRes.json();
+        throw new Error(errorData.message || "Cloudinary upload failed");
       }
 
       const uploadData = await uploadRes.json();
@@ -117,9 +118,9 @@ export function MediaGalleryTab() {
       } else {
         toast.error("Failed to save image record.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload failed", error);
-      toast.error("Failed to upload image.");
+      toast.error(error.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -164,7 +165,7 @@ export function MediaGalleryTab() {
         ref={fileInputRef}
         onChange={handleFileUpload}
         className="hidden"
-        accept="image/png, image/jpeg, image/gif, image/webp"
+        accept="image/png, image/jpeg, image/gif, image/webp, image/heic, image/heif, .heic, .heif"
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

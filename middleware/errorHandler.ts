@@ -64,6 +64,13 @@ export const globalErrorHandler = (
       error = new AppError("Your token has expired! Please log in again.", 401);
     }
 
+    if (error.code === "LIMIT_FILE_SIZE") {
+      error = new AppError("File is too large. Max size is 20MB.", 400);
+    }
+    if (error.message === "Only image files are allowed!") {
+      error = new AppError("Invalid file type. Only image files are allowed.", 400);
+    }
+    
     sendErrorProd(error, res);
   }
 };

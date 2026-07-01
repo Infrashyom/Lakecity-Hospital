@@ -24,8 +24,8 @@ const MenuBar = ({ editor }: { editor: any }) => {
       const file = input.files ? input.files[0] : null;
       if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image is too large. Max size is 5MB");
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error("Image is too large. Max size is 20MB");
         return;
       }
 
@@ -40,16 +40,19 @@ const MenuBar = ({ editor }: { editor: any }) => {
           body: uploadData,
         });
 
-        if (!res.ok) throw new Error("Upload failed");
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Upload failed");
+        }
 
         const data = await res.json();
         const url = data.data.url;
 
         editor.chain().focus().setImage({ src: url }).run();
         toast.success("Image uploaded successfully", { id: toastId });
-      } catch (err) {
+      } catch (err: any) {
         console.error("Image upload failed", err);
-        toast.error("Failed to upload image. Check server configuration.", { id: toastId });
+        toast.error(err.message || "Failed to upload image.", { id: toastId });
       }
     };
   };
@@ -170,8 +173,8 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image is too large. Max size is 5MB");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image is too large. Max size is 20MB");
       return;
     }
 
@@ -186,15 +189,16 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
       });
 
       if (!res.ok) {
-        throw new Error("Upload failed");
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Upload failed");
       }
 
       const data = await res.json();
       setFormData({ ...formData, image: data.data.url });
       toast.success("Image uploaded successfully");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Failed to upload image. Check server configuration.");
+      toast.error(err.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
     }
@@ -228,7 +232,7 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
                 >
                   <input 
                     type="file" 
-                    accept="image/*" 
+                    accept="image/*, image/heic, image/heif, .heic, .heif" 
                     className="hidden" 
                     ref={fileInputRef}
                     onChange={handleImageUpload}
