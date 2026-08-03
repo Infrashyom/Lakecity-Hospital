@@ -27,10 +27,13 @@ export function About() {
               A Legacy of Care and <span className="text-primary">Excellence</span>
             </h1>
             <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-              Serving Bhopal and surrounding regions, Lake City Hospital has grown to become a trusted, premium multispeciality healthcare institution. We believe that world-class healthcare should be accessible, compassionate, and family-focused.
+              <strong>Lake City Hospital</strong> is a leading <strong>Super Speciality Surgical Center</strong> located at Kasturba Nagar, Near Chetak Bridge, Bhopal, committed to delivering advanced surgical and medical care with compassion, expertise, and a patient-first approach.
+            </p>
+            <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+              Our multidisciplinary team provides comprehensive care across <strong>Cancer Surgery, Medical Oncology, Hemato-Oncology, Pediatric Surgery, Plastic & Reconstructive Surgery, Maxillofacial Surgery, Gynecology, Burn Care, Pain & Palliative Care, Physiotherapy, and Pediatrics & Neonatal Care</strong>. By bringing multiple super specialities under one roof, we ensure seamless, high-quality treatment for patients of all ages.
             </p>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              We stand as a specialist center for cancer care, burn reconstruction, and advanced surgical interventions. Our dedicated teams, state-of-the-art emergency facilities, and partnerships with Ayushman Bharat and Smile Train ensure readiness for every need.
+              As an <strong>Ayushman Bharat Empanelled Hospital</strong>, we offer cashless treatment for eligible patients, including comprehensive cancer care under the Ayushman Yojana. In partnership with <strong>Smile Train</strong>, we also provide free <strong>cleft lip and cleft palate surgeries</strong>, helping children receive life-changing treatment regardless of their financial background.
             </p>
             <div className="flex gap-4">
               <Link to="/doctors">
@@ -84,22 +87,22 @@ export function About() {
             <Card className="border-none shadow-2xl bg-white/10 backdrop-blur-md text-white">
               <CardContent className="p-10">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
-                  <HeartPulse className="w-8 h-8 text-white" />
+                  <ShieldCheck className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-3xl font-bold text-white mb-4">Our Mission</h3>
+                <h3 className="text-3xl font-bold text-white mb-4">Our Vision</h3>
                 <p className="text-lg text-blue-100 leading-relaxed">
-                  To provide compassionate, accessible, high-quality, and cost-effective healthcare to the community. We strive to improve the health and well-being of those we serve through innovation, education, and clinical excellence.
+                  To be Central India's trusted super speciality healthcare institution, delivering world-class surgical excellence, compassionate patient care, and accessible treatment for every individual.
                 </p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-2xl bg-white/10 backdrop-blur-md text-white">
               <CardContent className="p-10">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
-                  <ShieldCheck className="w-8 h-8 text-white" />
+                  <HeartPulse className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-3xl font-bold text-white mb-4">Our Vision</h3>
+                <h3 className="text-3xl font-bold text-white mb-4">Our Mission</h3>
                 <p className="text-lg text-blue-100 leading-relaxed">
-                  To be the premier healthcare destination in Central India, recognized globally for our clinical excellence, patient-centric approach, and commitment to advancing medical science.
+                  To provide compassionate, accessible, high-quality, and cost-effective healthcare to the community. We strive to improve the health and well-being of those we serve through innovation, education, and clinical excellence.
                 </p>
               </CardContent>
             </Card>

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { ImageIcon, FileText, ArrowLeft } from "lucide-react";
-import { Button } from "@/src/components/ui/Button";
 import { SEO } from "@/src/components/SEO";
+import { Button } from "@/src/components/ui/Button";
+import { ArrowLeft, ImageIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export function Gallery() {
   const [folders, setFolders] = useState(['All', 'Doctor Photos', 'Hospital Facility / Infra', 'Awards & Credentials']);
@@ -45,7 +45,7 @@ export function Gallery() {
              </Button>
            </Link>
            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">Media Gallery</h1>
-           <p className="text-lg text-slate-600 max-w-2xl">Explore our clinical infrastructure, success stories, awards, and our clinical team at Lake City Caring Partners.</p>
+           <p className="text-lg text-slate-600 max-w-4xl">Welcome to the Lake City Hospital Gallery, where you can explore our state-of-the-art facilities, advanced medical infrastructure, dedicated healthcare professionals, and moments that reflect our commitment to compassionate patient care. Every image showcases our continuous efforts to provide a safe, comfortable, and healing environment for patients and their families.</p>
         </div>
 
         {/* Filter Bar */}

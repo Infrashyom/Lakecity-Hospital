@@ -1,6 +1,6 @@
 import { FAQSection } from "@/src/components/sections/FAQSection";
 import { MediaGallerySection } from "@/src/components/sections/MediaGallerySection";
-import { PatientJourney } from "@/src/components/sections/PatientJourney";
+import { DoctorsSection } from "@/src/components/sections/DoctorsSection";
 import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
 import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
@@ -96,11 +96,14 @@ export function Home() {
                   Welcome to Lake City Caring Partners
                 </span>
                 <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6">
-                  Advanced Care.<br />
-                  <span className="text-secondary">Trusted Healing.</span>
+                  Super Speciality <br />
+                  <span className="text-secondary">Surgical Center</span>
                 </h1>
-                <p className="text-lg text-slate-700 mb-10 max-w-2xl leading-relaxed font-medium">
-                  Experience world-class healthcare with state-of-the-art technology and compassionate experts in Bhopal. We partner with Ayushman Bharat and Smile Train to deliver accessible, high-quality care.
+                <p className="text-lg text-slate-700 mb-4 max-w-2xl leading-relaxed font-medium">
+                  Advanced Surgical & Medical Care in Bhopal, with Compassion at Every Step
+                </p>
+                <p className="text-base text-slate-600 mb-10 max-w-2xl leading-relaxed font-semibold">
+                  Ayushman Bharat Empanelled Hospital | Cancer Care | Reconstructive Surgery | Pediatric & Neonatal Care
                 </p>
                 
                 <div className="flex flex-wrap gap-4">
@@ -147,6 +150,57 @@ export function Home() {
                 </div>
               </motion.div>
             ) : null}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-20 lg:py-32 bg-white relative overflow-hidden" aria-labelledby="about-hospital">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-sm mb-6">
+                <Building2 className="w-4 h-4" />
+                <span>Our Heritage of Healing</span>
+              </div>
+              <h2 id="about-hospital" className="text-3xl md:text-5xl font-bold mb-6 text-slate-900 leading-tight">About Lake City Hospital</h2>
+              <div className="text-lg text-slate-600 leading-relaxed space-y-6 mb-10">
+                <p>
+                  Lake City Hospital is a leading Super Speciality Surgical Center in Bhopal, offering advanced surgical and medical care with a patient-first approach. Located at B-27, Kasturba Nagar, near Chetak Bridge, the hospital brings together a team of experienced specialists across cancer care, reconstructive surgery, pediatric surgery and more, delivering quality healthcare with compassion and expertise.
+                </p>
+                <p>
+                  We are proud to be an Ayushman Bharat empanelled hospital, providing cashless treatment for eligible patients, including comprehensive cancer care under the Ayushman Yojana. Through our partnership with Smile Train, we also provide free cleft lip and cleft palate treatment for children.
+                </p>
+              </div>
+              <Link to="/about" className="inline-flex items-center justify-center font-semibold text-white bg-primary hover:bg-primary-dark transition-all rounded-lg px-8 py-4 gap-3 shadow-lg shadow-primary/25 group">
+                Read our full story
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/5 rounded-3xl transform rotate-3 scale-105" />
+              <div className="relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-100">
+                <img 
+                  src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2000&auto=format&fit=crop" 
+                  alt="Lake City Hospital" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="bg-white/95 backdrop-blur rounded-2xl p-6 shadow-xl">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <HeartPulse className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900">Patient-First Approach</h4>
+                        <p className="text-sm text-slate-500">Dedicated to your well-being</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -256,48 +310,43 @@ export function Home() {
         </div>
       </section>
 
-      {/* Patient Journey Section */}
-      <PatientJourney />
-
-      {/* Virtual Tour Section */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden" aria-labelledby="virtual-tour-heading">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2000&auto=format&fit=crop" 
-            alt="Hospital Interior" 
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
-        </div>
-        
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <span className="inline-block py-1 px-3 rounded-full bg-white/10 text-white text-sm font-semibold mb-6 backdrop-blur-sm border border-white/20">
-              Interactive Experience
-            </span>
-            <h2 id="virtual-tour-heading" className="text-3xl md:text-5xl font-bold mb-6">
-              Take a 360° Virtual Tour
-            </h2>
-            <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
-              Explore our state-of-the-art facilities, patient rooms, and advanced operating theaters from the comfort of your home.
-            </p>
-            
-            <Link to="/tour" className="inline-block focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-primary rounded-md">
-              <Button size="lg" className="h-16 px-10 text-lg gap-3 bg-white text-slate-900 hover:bg-slate-100 shadow-xl shadow-white/10">
-                <Activity className="h-6 w-6 text-primary" aria-hidden="true" />
-                Start Virtual Tour
-                <ArrowRight className="h-5 w-5 ml-2 text-slate-400" aria-hidden="true" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Doctors Section */}
+      <DoctorsSection />
 
       {/* Media Gallery */}
       <MediaGallerySection />
 
       {/* Testimonials */}
       <TestimonialsSection />
+
+      {/* Map Section */}
+      <section className="py-12 bg-white" aria-labelledby="location-heading">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h2 id="location-heading" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Visit Our Centre</h2>
+            <p className="text-slate-600 text-lg">Accessible location in the heart of the city.</p>
+          </div>
+          <div className="max-w-5xl mx-auto h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 relative shadow-lg">
+             <iframe 
+                src={(settings?.googleMapsLink && settings.googleMapsLink.includes('embed')) ? settings.googleMapsLink : `https://maps.google.com/maps?q=${encodeURIComponent((settings?.hospitalName || "Lake City Hospital") + (settings?.address ? ', ' + settings.address : ''))}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 
+                className="absolute inset-0 w-full h-full border-0" 
+                allowFullScreen 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 max-w-[calc(100%-2rem)] sm:max-w-xs pointer-events-none">
+                <div className="bg-white/95 backdrop-blur p-6 rounded-2xl shadow-xl border border-slate-100 pointer-events-auto">
+                  <h3 className="text-lg font-bold text-primary mb-2">{settings?.hospitalName || "Lake City Hospital"}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {settings?.address ? (
+                      settings.address.split('\n').map((line, idx) => <span key={idx}>{line}<br/></span>)
+                    ) : "B-27, Kasturba Nagar, near Chetak Bridge, Bhopal"}
+                  </p>
+                </div>
+              </div>
+          </div>
+        </div>
+      </section>
 
       {/* FAQs */}
       <FAQSection />

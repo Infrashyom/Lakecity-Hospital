@@ -53,11 +53,19 @@ export function Departments() {
     <div className="min-h-screen pt-32 pb-20 bg-slate-50">
       <SEO title="Departments" description="Explore our Centers of Excellence offering world-class care." />
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Centers of Excellence</h1>
-          <p className="text-lg text-slate-600">
-            Our specialized departments are equipped with cutting-edge technology and staffed by renowned medical experts to provide you with world-class care.
-          </p>
+        <div className="text-center max-w-4xl mx-auto mb-16">
+          <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-sm mb-6">
+            <span>Our Specialities</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Centers of Excellence</h1>
+          <div className="text-lg text-slate-600 leading-relaxed space-y-4">
+            <p>
+              At Lake City Hospital, we are committed to delivering advanced medical and surgical care through a wide range of super speciality healthcare services. 
+            </p>
+            <p>
+              Our team of experienced specialists combines clinical expertise, modern technology, and a patient-first approach to provide accurate diagnosis, effective treatment, and compassionate care. From routine consultations to complex surgeries and rehabilitation, we offer comprehensive healthcare under one roof.
+            </p>
+          </div>
         </div>
 
         {isLoading ? (
@@ -83,7 +91,7 @@ export function Departments() {
                       </div>
                       
                       <h3 className="relative z-10 text-2xl font-bold text-slate-900 mb-3">{dept.name}</h3>
-                      <p className="relative z-10 text-slate-600 mb-8 grow leading-relaxed">{dept.shortDescription || "Specialized care and treatment."}</p>
+                      <p className="relative z-10 text-slate-600 mb-8 flex-grow leading-relaxed">{dept.shortDescription || "Specialized care and treatment."}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
