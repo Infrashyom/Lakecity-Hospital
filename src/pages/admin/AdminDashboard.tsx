@@ -392,7 +392,7 @@ export function AdminDashboard() {
                           (a.phone || "").includes(apptSearchTerm);
     const matchesStatus = apptFilterStatus === "All" || a.status === apptFilterStatus;
     return matchesSearch && matchesStatus;
-  });
+  }).sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
 
   const exportAppointmentsCSV = () => {
     const headers = "Patient Name,Phone,Email,Doctor,Department,Date,Time,Status\n";
@@ -931,7 +931,7 @@ export function AdminDashboard() {
                       </h3>
                       
                       <p className="text-slate-500 text-sm line-clamp-2 pr-4 leading-relaxed">
-                        {post.content ? post.content.replace(/<[^>]*>?/gm, '') : 'No description available for this post.'}
+                        {post.description || (post.content ? post.content.replace(/<[^>]*>?/gm, '') : 'No description available for this post.')}
                       </p>
                     </div>
                   </div>

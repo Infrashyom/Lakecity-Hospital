@@ -4,7 +4,8 @@ import { cn } from "@/src/lib/utils";
 import { Calendar, Menu, Phone, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useBooking } from "@/src/contexts/BookingContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -19,6 +20,8 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const navigate = useNavigate();
+    const { openBooking } = useBooking();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -50,20 +53,13 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            {settings?.logoUrl ? (
+            {settings?.logoUrl && (
               <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" />
-            ) : (
-              <>
-                <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-105 transition-transform flex items-center justify-center">
-                  <span className="text-lg font-bold leading-none">{hospitalName.charAt(0)}</span>
-                  <span className="text-lg font-bold leading-none text-secondary">H</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xl font-bold text-primary leading-tight">{hospitalName.split(" ")[0]} {hospitalName.split(" ")[1]}</span>
-                  <span className="text-xs font-semibold text-secondary tracking-wider uppercase">{hospitalName.split(" ").slice(2).join(" ")}</span>
-                </div>
-              </>
             )}
+            <div className="flex flex-col ml-1">
+              <span className="text-2xl font-bold text-primary leading-none tracking-tight">Lake City</span>
+              <span className="text-sm font-bold text-secondary tracking-widest uppercase mt-0.5">HOSPITAL</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -91,12 +87,10 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link to="/book">
-              <Button className="gap-2">
+            <Button type="button" className="gap-2" onClick={() => openBooking()}>
                 <Calendar className="h-4 w-4" />
                 <span>Book Appointment</span>
               </Button>
-            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -137,12 +131,10 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="h-px bg-gray-100 my-2" aria-hidden="true" />
-              <Link to="/book" className="w-full focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md">
-                <Button className="w-full gap-2 justify-center">
+              <Button type="button" className="w-full gap-2 justify-center" onClick={() => { openBooking(); setTimeout(() => setIsMobileMenuOpen(false), 50); }}>
                   <Calendar className="h-4 w-4" aria-hidden="true" />
                   <span>Book Appointment</span>
                 </Button>
-              </Link>
               <a href="tel:1066" className="w-full">
                 <Button variant="danger" className="w-full gap-2 justify-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger">
                   <Phone className="h-4 w-4" aria-hidden="true" />

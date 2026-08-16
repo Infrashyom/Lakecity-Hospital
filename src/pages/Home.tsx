@@ -1,5 +1,7 @@
 import { FAQSection } from "@/src/components/sections/FAQSection";
 import { MediaGallerySection } from "@/src/components/sections/MediaGallerySection";
+import { YouTubeSection } from "@/src/components/sections/YoutubeSection";
+import { BlogSection } from "@/src/components/sections/BlogSection";
 import { DoctorsSection } from "@/src/components/sections/DoctorsSection";
 import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
 import { SEO } from "@/src/components/SEO";
@@ -27,9 +29,10 @@ import {
   Syringe,
   Users
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useBooking } from "@/src/contexts/BookingContext";
 
 const getDepartmentIcon = (name: string) => {
   const n = name.toLowerCase();
@@ -47,8 +50,11 @@ const getDepartmentIcon = (name: string) => {
 };
 
 export function Home() {
+  const navigate = useNavigate();
+    const { openBooking } = useBooking();
   const { settings } = useSettings();
   const [departments, setDepartments] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetch('/api/departments')
@@ -62,6 +68,16 @@ export function Home() {
       })
       .catch(err => console.error("Error fetching departments:", err));
   }, []);
+
+  const heroCarousel = settings?.heroCarousel?.filter(item => item && item.image) || [];
+
+  useEffect(() => {
+    if (heroCarousel.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % heroCarousel.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroCarousel.length]);
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -86,7 +102,7 @@ export function Home() {
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl order-2 lg:order-1">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -107,12 +123,10 @@ export function Home() {
                 </p>
                 
                 <div className="flex flex-wrap gap-4">
-                  <Link to="/book" aria-label="Book an appointment" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md">
-                    <Button size="lg" className="gap-2 h-14 px-8 text-base shadow-xl shadow-primary/20">
+                  <Button size="lg" className="gap-2 h-14 px-8 text-base shadow-xl shadow-primary/20" onClick={() => openBooking()}>
                       <Calendar className="h-5 w-5" aria-hidden="true" />
                       Book Appointment
                     </Button>
-                  </Link>
                   <a href="tel:1066" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger rounded-md">
                     <Button size="lg" variant="danger" className="gap-2 h-14 px-8 text-base shadow-xl shadow-danger/20" aria-label="Call Emergency at 1066">
                       <Phone className="h-5 w-5" aria-hidden="true" />
@@ -123,39 +137,68 @@ export function Home() {
               </motion.div>
             </div>
             
-            {settings?.homeVideoUrl ? (
+            {heroCarousel.length > 0 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="w-full relative"
+                className="w-full relative order-1 lg:order-2"
               >
-                <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
-                  <iframe 
-                    className="w-full aspect-video"
-                    src={(() => {
-                      try {
-                        const url = new URL(settings.homeVideoUrl);
-                        const v = url.searchParams.get("v");
-                        if (v) return `https://www.youtube.com/embed/${v}`;
-                        return settings.homeVideoUrl;
-                      } catch {
-                        return settings.homeVideoUrl;
-                      }
-                    })()}
-                    title="Lake City Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                <div className="relative w-full aspect-[4/3] sm:aspect-video lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentSlide}
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0"
+                    >
+                      <img 
+                        src={heroCarousel[currentSlide].image} 
+                        alt={heroCarousel[currentSlide].title || "Carousel image"} 
+                        className="w-full h-full object-cover"
+                      />
+                      {(heroCarousel[currentSlide].title || heroCarousel[currentSlide].description) && (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 md:p-8">
+                          {heroCarousel[currentSlide].title && (
+                            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
+                              {heroCarousel[currentSlide].title}
+                            </h3>
+                          )}
+                          {heroCarousel[currentSlide].description && (
+                            <p className="text-white/90 text-sm md:text-base max-w-lg leading-relaxed">
+                              {heroCarousel[currentSlide].description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {heroCarousel.length > 1 && (
+                    <div className="absolute bottom-4 right-4 flex gap-2 z-20">
+                      {heroCarousel.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentSlide(idx)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                            idx === currentSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
+                          }`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
-            ) : null}
+            )}
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section className="py-20 lg:py-32 bg-white relative overflow-hidden" aria-labelledby="about-hospital">
+      <section className="py-16 bg-white relative overflow-hidden" aria-labelledby="about-hospital">
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
@@ -207,7 +250,7 @@ export function Home() {
 
       {/* Key Services */}
       {departments.length > 0 && (
-        <section className="py-16 lg:py-24 bg-slate-50" aria-labelledby="centers-of-excellence">
+        <section className="py-16 bg-slate-50" aria-labelledby="centers-of-excellence">
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div className="max-w-3xl">
@@ -252,7 +295,7 @@ export function Home() {
       )}
 
       {/* Why Choose Us */}
-      <section className="py-24 relative overflow-hidden bg-[#0a3138]" aria-labelledby="why-choose-us">
+      <section className="py-16 relative overflow-hidden bg-[#0a3138]" aria-labelledby="why-choose-us">
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -313,8 +356,14 @@ export function Home() {
       {/* Doctors Section */}
       <DoctorsSection />
 
+      {/* YouTube Section */}
+      <YouTubeSection />
+
       {/* Media Gallery */}
       <MediaGallerySection />
+
+      {/* Blogs Section */}
+      <BlogSection />
 
       {/* Testimonials */}
       <TestimonialsSection />
@@ -359,9 +408,7 @@ export function Home() {
             Book an appointment online or call our helpline. Our team is ready to assist you.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/book" aria-label="Book an appointment now" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base">Book Appointment Now</Button>
-            </Link>
+            <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base" onClick={() => openBooking()}>Book Appointment Now</Button>
           </div>
         </div>
       </section>

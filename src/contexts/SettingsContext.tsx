@@ -15,7 +15,12 @@ export interface SiteSettings {
   whatsappNumber?: string;
   seoDefaults?: SeoDefaults;
   socialHandles?: any;
-  homeVideoUrl?: string;
+  featuredVideos?: string[];
+  heroCarousel?: {
+    image: string;
+    title: string;
+    description: string;
+  }[];
   aboutUsImageUrl?: string;
 }
 

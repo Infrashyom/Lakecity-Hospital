@@ -7,7 +7,6 @@ export interface IAdmin extends Document {
   otpExpiry?: Date;
   hospitalName?: string;
   logoUrl?: string;
-  homeVideoUrl?: string;
   aboutUsImageUrl?: string;
   contactNumbers?: string[];
   emails?: string[];
@@ -15,6 +14,12 @@ export interface IAdmin extends Document {
   googleMapsLink?: string;
   whatsappNumber?: string;
   smtpConfig?: any;
+  featuredVideos?: string[];
+  heroCarousel?: {
+    image: string;
+    title: string;
+    description: string;
+  }[];
   seoDefaults?: {
     metaTitle?: string;
     description?: string;
@@ -32,7 +37,6 @@ const AdminSchema: Schema = new Schema({
   otpExpiry: { type: Date },
   hospitalName: { type: String, default: "" },
   logoUrl: { type: String, default: "" },
-  homeVideoUrl: { type: String, default: "" },
   aboutUsImageUrl: { type: String, default: "" },
   contactNumbers: { type: [String], default: [] },
   emails: { type: [String], default: [] },
@@ -40,6 +44,15 @@ const AdminSchema: Schema = new Schema({
   googleMapsLink: { type: String, default: "" },
   whatsappNumber: { type: String, default: "" },
   smtpConfig: { type: Schema.Types.Mixed },
+  featuredVideos: { type: [String], default: [] },
+  heroCarousel: {
+    type: [{
+      image: { type: String, default: "" },
+      title: { type: String, default: "" },
+      description: { type: String, default: "" }
+    }],
+    default: []
+  },
   seoDefaults: {
     metaTitle: { type: String },
     description: { type: String }

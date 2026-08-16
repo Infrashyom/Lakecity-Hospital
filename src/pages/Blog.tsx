@@ -71,6 +71,11 @@ export function Blog() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
+                  {post.category && (
+                    <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
+                      {post.category}
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-6 flex flex-col flex-grow">
                   <div className="flex items-center gap-4 text-xs text-slate-500 mb-4">

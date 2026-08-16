@@ -147,10 +147,6 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
       
       <div className="grid grid-cols-1 gap-6">
         {departments.map((dept, i) => {
-          const assignedDoctors = doctors.filter(d => 
-            d.department === dept._id || d.department === dept.id
-          );
-
           return (
             <Card key={i} className="border-none shadow-sm bg-white overflow-hidden hover:shadow-md transition-all">
               <div className="p-5 flex flex-col items-start gap-4">
@@ -164,7 +160,6 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
                       <h3 className="font-bold text-lg text-slate-800">{dept.name}</h3>
                       <p className="text-sm text-slate-500 font-medium w-full max-w-lg mb-2">{dept.shortDescription || 'No description provided.'}</p>
                       <div className="flex gap-4">
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-medium">{assignedDoctors.length} Assigned Doctors</span>
                         {dept.seoTitle && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium">SEO Configured</span>}
                       </div>
                     </div>
@@ -175,22 +170,6 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
                       <Edit className="w-4 h-4" /> Edit Details
                     </Button>
                   </div>
-                </div>
-
-                {/* Assigned Doctors List */}
-                <div className="w-full mt-4 border-t border-slate-100 pt-4">
-                  <h4 className="text-sm font-bold text-slate-700 mb-3">Assigned Doctors</h4>
-                  {assignedDoctors.length === 0 ? (
-                     <p className="text-xs text-slate-400 italic">No doctors assigned to this department yet.</p>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {assignedDoctors.map(doc => (
-                        <div key={doc._id || doc.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg">
-                          <p className="text-sm font-bold text-slate-800 truncate pr-2">{doc.name}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
               </div>

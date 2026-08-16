@@ -12,6 +12,8 @@ export interface IContent extends Document {
   author?: string;
   showOnHome?: boolean;
   hotspots?: any[];
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 const ContentSchema: Schema = new Schema({
@@ -24,6 +26,8 @@ const ContentSchema: Schema = new Schema({
   description: { type: String },
   category: { type: String },
   author: { type: String },
+  seoTitle: { type: String },
+  seoDescription: { type: String },
   showOnHome: { type: Boolean, default: false },
   hotspots: { type: Array, default: function(this: any) { return this.type === 'tour' ? [] : undefined; } },
 }, { timestamps: true });

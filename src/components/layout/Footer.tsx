@@ -1,8 +1,11 @@
 import { useSettings } from "@/src/contexts/SettingsContext";
 import { Instagram, Mail, MapPin, Phone, Youtube } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useBooking } from "@/src/contexts/BookingContext";
 
 export function Footer() {
+  const navigate = useNavigate();
+    const { openBooking } = useBooking();
   const { settings } = useSettings();
 
   const hospitalName = settings?.hospitalName || "Lake City Caring Partners";
@@ -20,20 +23,13 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 group">
-              {settings?.logoUrl ? (
+              {settings?.logoUrl && (
                  <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform bg-white p-1 rounded" referrerPolicy="no-referrer" />
-              ) : (
-                <>
-                  <div className="bg-primary text-white p-2 rounded-xl">
-                    <span className="text-lg font-bold leading-none">{hospitalName.charAt(0)}</span>
-                    <span className="text-lg font-bold leading-none text-secondary">H</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xl font-bold text-white leading-tight">{hospitalName.split(" ")[0]} {hospitalName.split(" ")[1]}</span>
-                    <span className="text-xs font-semibold text-secondary tracking-wider uppercase">{hospitalName.split(" ").slice(2).join(" ")}</span>
-                  </div>
-                </>
               )}
+              <div className="flex flex-col ml-1">
+                <span className="text-2xl font-bold text-white leading-none tracking-tight">Lake City</span>
+                <span className="text-sm font-bold text-secondary tracking-widest uppercase mt-0.5">HOSPITAL</span>
+              </div>
             </Link>
             <p className="leading-relaxed">
               Providing advanced care and trusted healing to the community of Bhopal and beyond. Your health is our priority.
@@ -51,7 +47,7 @@ export function Footer() {
               <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/departments" className="hover:text-primary transition-colors">Departments</Link></li>
               <li><Link to="/doctors" className="hover:text-primary transition-colors">Find a Doctor</Link></li>
-              <li><Link to="/book" className="hover:text-primary transition-colors">Book Appointment</Link></li>
+              <li><button onClick={() => openBooking()} className="hover:text-primary transition-colors text-slate-300">Book Appointment</button></li>
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>

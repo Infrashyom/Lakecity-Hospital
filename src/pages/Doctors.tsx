@@ -97,7 +97,7 @@ export function Doctors() {
                       </div>
                       
                       <div className="flex gap-3">
-                        <Link to={`/doctors/${doc._id || doc.id}`} className="flex-1">
+                        <Link to={`/doctors/${encodeURIComponent((doc.name || "").replace(/\s+/g, "-").toLowerCase())}`} className="flex-1">
                           <Button variant="outline" className="w-full">View Profile</Button>
                         </Link>
                       </div>

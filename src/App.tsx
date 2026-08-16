@@ -16,7 +16,6 @@ import { Toaster } from "sonner";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/src/pages/Home").then(module => ({ default: module.Home })));
-const BookAppointment = lazy(() => import("@/src/pages/BookAppointment").then(module => ({ default: module.BookAppointment })));
 const Doctors = lazy(() => import("@/src/pages/Doctors").then(module => ({ default: module.Doctors })));
 const DoctorProfile = lazy(() => import("@/src/pages/DoctorProfile").then(module => ({ default: module.DoctorProfile })));
 const Departments = lazy(() => import("@/src/pages/Departments").then(module => ({ default: module.Departments })));
@@ -34,6 +33,9 @@ const AdminLogin = lazy(() => import("@/src/pages/admin/AdminLogin").then(module
 const AdminVerify = lazy(() => import("@/src/pages/admin/AdminVerify").then(module => ({ default: module.AdminVerify })));
 const AdminDashboard = lazy(() => import("@/src/pages/admin/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 
+import { BookAppointmentModal } from "@/src/components/BookAppointmentModal";
+import { BookingProvider, useBooking } from "@/src/contexts/BookingContext";
+
 // Loading Fallback Component
 const PageLoading = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -42,19 +44,25 @@ const PageLoading = () => (
 );
 
 // Main Layout Wrapper
-const MainLayout = ({ children }: { children: React.ReactNode }) => (
-  <>
-    <Navbar />
-    <main className="flex-grow">{children}</main>
-    <Footer />
-    <FloatingActionButtons />
-  </>
-);
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  const { isBookingOpen, closeBooking } = useBooking();
+
+  return (
+    <>
+      <Navbar />
+      <main className="flex-grow">{children}</main>
+      <Footer />
+      <FloatingActionButtons />
+      <BookAppointmentModal isOpen={isBookingOpen} onClose={closeBooking} />
+    </>
+  );
+};
 
 export default function App() {
   useAnalyticsTracker();
   return (
-    <Router>
+    <BookingProvider>
+      <Router>
       <Toaster position="top-center" richColors />
       <ScrollToTop />
       <Suspense fallback={<PageLoading />}>
@@ -65,7 +73,6 @@ export default function App() {
           <Route path="/departments" element={<MainLayout><Departments /></MainLayout>} />
           <Route path="/doctors" element={<MainLayout><Doctors /></MainLayout>} />
           <Route path="/doctors/:id" element={<MainLayout><DoctorProfile /></MainLayout>} />
-          <Route path="/book" element={<MainLayout><BookAppointment /></MainLayout>} />
           <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
           <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
           <Route path="/blog/:id" element={<MainLayout><BlogDetails /></MainLayout>} />
@@ -83,5 +90,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </Router>
+    </BookingProvider>
   );
 }

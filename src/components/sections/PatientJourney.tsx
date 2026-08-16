@@ -1,15 +1,14 @@
-import { motion } from "motion/react";
-import { 
-  PhoneCall, 
-  Ambulance, 
-  Stethoscope, 
-  ClipboardList, 
-  BedDouble, 
-  HeartPulse, 
-  Home,
-  ArrowRight
-} from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/Card";
+import {
+  Ambulance,
+  ArrowRight,
+  ClipboardList,
+  HeartPulse,
+  Home,
+  PhoneCall,
+  Stethoscope
+} from "lucide-react";
+import { motion } from "motion/react";
 
 const journeySteps = [
   {
@@ -64,7 +63,7 @@ const journeySteps = [
 
 export function PatientJourney() {
   return (
-    <section className="py-24 bg-slate-50 overflow-hidden">
+    <section className="py-16 bg-slate-50 overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div

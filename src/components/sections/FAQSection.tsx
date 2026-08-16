@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -28,7 +28,7 @@ export function FAQSection() {
   ];
 
   return (
-    <section className="py-24 bg-white" aria-labelledby="faq-heading">
+    <section className="py-16 bg-white" aria-labelledby="faq-heading">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 id="faq-heading" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Frequently Asked Questions</h2>

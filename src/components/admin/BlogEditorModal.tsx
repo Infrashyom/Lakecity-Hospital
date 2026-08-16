@@ -125,10 +125,24 @@ const editorExtensions = [
 
 export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOpen: boolean; onClose: () => void; onSave: (blog: any) => void; editingBlog?: any }) {
   const [formData, setFormData] = useState({
-    title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: ""
+    title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: ""
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/departments')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDepartments(data.filter((d: any) => d.status === "ACTIVE"));
+        } else if (data && data.data && Array.isArray(data.data)) {
+          setDepartments(data.data.filter((d: any) => d.status === "ACTIVE"));
+        }
+      })
+      .catch(err => console.error("Error fetching departments:", err));
+  }, []);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -152,7 +166,8 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
         description: editingBlog.description || editingBlog.excerpt || editingBlog.summary || "",
         image: editingBlog.image || "",
         seoTitle: editingBlog.seoTitle || "",
-        seoDescription: editingBlog.seoDescription || ""
+        seoDescription: editingBlog.seoDescription || "",
+        category: editingBlog.category || ""
       };
       setFormData(newFormData);
       if (editor && !editor.isDestroyed) {
@@ -160,7 +175,7 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
       }
     } else {
       const newFormData = { 
-        title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: ""
+        title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: ""
       };
       setFormData(newFormData);
       if (editor && !editor.isDestroyed) {
@@ -260,6 +275,39 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
                   value={formData.author} 
                   onChange={(e) => setFormData({...formData, author: e.target.value})} 
                   className="h-12 bg-slate-50/50 border-slate-200 shadow-none text-slate-700"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-2 block uppercase tracking-wider">Department / Category (Optional)</label>
+                <div className="relative">
+                  <select 
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                    className="w-full h-12 bg-slate-50/50 border border-slate-200 rounded-xl px-4 text-sm text-slate-700 focus:ring-1 focus:ring-primary outline-none appearance-none"
+                  >
+                    <option value="">None / General</option>
+                    {departments.map((dept: any) => (
+                      <option key={dept._id || dept.id} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-100">
+                <label className="text-xs font-bold text-slate-500 mb-2 block uppercase tracking-wider">SEO Title (Optional)</label>
+                <Input 
+                  value={formData.seoTitle} 
+                  onChange={(e) => setFormData({...formData, seoTitle: e.target.value})} 
+                  placeholder="Override default title"
+                  className="h-10 bg-slate-50/50 border-slate-200 shadow-none text-slate-700 text-sm mb-4"
+                />
+                
+                <label className="text-xs font-bold text-slate-500 mb-2 block uppercase tracking-wider">SEO Description (Optional)</label>
+                <textarea 
+                  value={formData.seoDescription} 
+                  onChange={(e) => setFormData({...formData, seoDescription: e.target.value})} 
+                  placeholder="Override default summary"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:ring-1 focus:ring-primary outline-none resize-y min-h-[80px]"
                 />
               </div>
             </div>

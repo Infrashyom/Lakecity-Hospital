@@ -3,9 +3,12 @@ import { Card, CardContent } from "@/src/components/ui/Card";
 import { ArrowLeft, Award, BookOpen, Calendar, Clock, GraduationCap, Loader2, MapPin, Star } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams, useNavigate } from "react-router-dom";
+import { useBooking } from "@/src/contexts/BookingContext";
 
 export function DoctorProfile() {
+  const navigate = useNavigate();
+    const { openBooking } = useBooking();
   const { id } = useParams<{ id: string }>();
   const [doctor, setDoctor] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,11 +97,9 @@ export function DoctorProfile() {
                       )}
                     </div>
 
-                    <Link to={`/book?doctor=${doctor._id || doctor.id}`} className="block w-full">
-                      <Button className="w-full h-12 text-base shadow-md shadow-primary/20">
+                    <Button className="w-full h-12 text-base shadow-md shadow-primary/20" onClick={() => openBooking(doctor._id || doctor.id)}>
                         Book Appointment
                       </Button>
-                    </Link>
                   </div>
                 </div>
               </Card>

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 import Doctor from "../models/Doctor.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
@@ -11,7 +12,18 @@ export const getDoctors = catchAsync(async (req: Request, res: Response, next: N
 
 // Get doctor by ID
 export const getDoctorById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const doctor = await Doctor.findById(req.params.id).populate("department", "name");
+  const { id } = req.params;
+  let doctor;
+
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    doctor = await Doctor.findById(id).populate("department", "name");
+  } else {
+    // Treat id as a slug
+    const searchName = id.replace(/-/g, ' ');
+    // Case insensitive regex match for name
+    doctor = await Doctor.findOne({ name: { $regex: new RegExp('^' + searchName.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&') + '$', 'i') } }).populate("department", "name");
+  }
+
   if (!doctor) {
     return next(new AppError("Doctor not found", 404));
   }
