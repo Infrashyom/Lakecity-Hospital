@@ -1,6 +1,6 @@
 import { FAQSection } from "@/src/components/sections/FAQSection";
 import { MediaGallerySection } from "@/src/components/sections/MediaGallerySection";
-import { YouTubeSection } from "@/src/components/sections/YoutubeSection";
+import { YouTubeSection } from "@/src/components/sections/YouTubeSection";
 import { BlogSection } from "@/src/components/sections/BlogSection";
 import { DoctorsSection } from "@/src/components/sections/DoctorsSection";
 import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
