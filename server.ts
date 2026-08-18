@@ -6,6 +6,7 @@ import { globalErrorHandler } from "./middleware/errorHandler.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
+import bannerRoutes from "./routes/bannerRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
@@ -42,6 +43,7 @@ async function startServer() {
   app.use("/api/upload", uploadRoutes);
   app.use("/api/insurances", insuranceRoutes);
   app.use("/api/analytics", analyticsRoutes);
+  app.use("/api/banners", bannerRoutes);
 
   // Global Error Handler (Add this after the routes)
   app.use(globalErrorHandler);

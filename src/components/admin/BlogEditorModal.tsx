@@ -1,7 +1,7 @@
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
-import { X, Loader2, ImageIcon, Bold, Italic, List, Link as LinkIcon, Undo, Redo, Type, ChevronDown } from "lucide-react";
+import { X, Loader2, ImageIcon, Bold, Italic, List, Link as LinkIcon, Undo, Redo, Type, ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { authFetch } from "@/src/lib/authFetch";
 import { toast } from "sonner";
@@ -125,7 +125,7 @@ const editorExtensions = [
 
 export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOpen: boolean; onClose: () => void; onSave: (blog: any) => void; editingBlog?: any }) {
   const [formData, setFormData] = useState({
-    title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: ""
+    title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: "", faqs: [] as {question: string, answer: string}[]
   });
   const [isUploading, setIsUploading] = useState(false);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -167,7 +167,8 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
         image: editingBlog.image || "",
         seoTitle: editingBlog.seoTitle || "",
         seoDescription: editingBlog.seoDescription || "",
-        category: editingBlog.category || ""
+        category: editingBlog.category || "",
+        faqs: editingBlog.faqs || []
       };
       setFormData(newFormData);
       if (editor && !editor.isDestroyed) {
@@ -175,7 +176,7 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
       }
     } else {
       const newFormData = { 
-        title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: ""
+        title: "", author: "Admin", content: "", description: "", image: "", seoTitle: "", seoDescription: "", category: "", faqs: [] as {question: string, answer: string}[]
       };
       setFormData(newFormData);
       if (editor && !editor.isDestroyed) {
@@ -336,12 +337,70 @@ export function BlogEditorModal({ isOpen, onClose, onSave, editingBlog }: { isOp
 
               <div className="flex-1 flex flex-col">
                 <label className="text-xs font-bold text-slate-500 mb-2 block uppercase tracking-wider">Main Content</label>
-                <div className="flex-1 border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white">
+                <div className="flex-1 border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white min-h-[300px]">
                   <MenuBar editor={editor} />
                   <div className="flex-1 overflow-y-auto cursor-text text-base" onClick={() => editor?.commands.focus()}>
                     <EditorContent editor={editor} className="min-h-full" />
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-slate-500 block uppercase tracking-wider">FAQs (Optional)</label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 text-xs flex items-center gap-1"
+                    onClick={() => setFormData(prev => ({ ...prev, faqs: [...prev.faqs, { question: "", answer: "" }] }))}
+                  >
+                    <Plus className="w-3 h-3" /> Add FAQ
+                  </Button>
+                </div>
+                {formData.faqs.length === 0 ? (
+                  <div className="text-sm text-slate-400 italic bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4 text-center">
+                    No FAQs added. Click 'Add FAQ' to create one.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {formData.faqs.map((faq, index) => (
+                      <div key={index} className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl relative group">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="absolute -top-3 -right-3 h-7 w-7 bg-white border border-slate-200 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          onClick={() => {
+                            const newFaqs = [...formData.faqs];
+                            newFaqs.splice(index, 1);
+                            setFormData(prev => ({ ...prev, faqs: newFaqs }));
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                        <Input 
+                          placeholder="Question..." 
+                          value={faq.question}
+                          onChange={(e) => {
+                            const newFaqs = [...formData.faqs];
+                            newFaqs[index].question = e.target.value;
+                            setFormData(prev => ({ ...prev, faqs: newFaqs }));
+                          }}
+                          className="h-10 bg-white border-slate-200 text-sm font-medium"
+                        />
+                        <textarea 
+                          placeholder="Answer..."
+                          value={faq.answer}
+                          onChange={(e) => {
+                            const newFaqs = [...formData.faqs];
+                            newFaqs[index].answer = e.target.value;
+                            setFormData(prev => ({ ...prev, faqs: newFaqs }));
+                          }}
+                          className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:ring-1 focus:ring-primary outline-none resize-y min-h-[60px]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -29,12 +29,11 @@ export function BlogSection() {
             <h2 id="latest-blogs" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Latest Insights & News</h2>
             <p className="text-slate-700 text-lg">Stay informed with medical updates, health tips, and news from our experts.</p>
           </div>
-          <Link to="/blogs" className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary-dark transition-colors group">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary-dark transition-colors group">
             View All Articles
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogs.map((blog) => {
             const formattedDate = new Date(blog.createdAt || Date.now()).toLocaleDateString("en-US", {
@@ -42,7 +41,6 @@ export function BlogSection() {
               day: "numeric",
               year: "numeric"
             });
-
             return (
               <Card key={blog._id || blog.id} className="overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow duration-300">
                 <div className="aspect-[16/9] w-full relative overflow-hidden bg-slate-100">
@@ -59,7 +57,7 @@ export function BlogSection() {
                     {blog.author && <div className="flex items-center gap-1"><User className="w-4 h-4" /> {blog.author}</div>}
                   </div>
                   <CardTitle className="text-xl font-bold text-slate-900 leading-tight line-clamp-2">
-                    <Link to={`/blogs`} className="hover:text-primary transition-colors">
+                    <Link to={`/blog/${blog.slug || blog._id || blog.id}`} className="hover:text-primary transition-colors">
                       {blog.title}
                     </Link>
                   </CardTitle>
@@ -68,7 +66,7 @@ export function BlogSection() {
                   <p className="text-slate-600 line-clamp-3 mb-4">
                     {blog.description || blog.content?.replace(/<[^>]+>/g, '') || "Read more about this topic..."}
                   </p>
-                  <Link to={`/blogs`} className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-dark transition-colors group">
+                  <Link to={`/blog/${blog.slug || blog._id || blog.id}`} className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-dark transition-colors group">
                     Read More
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>

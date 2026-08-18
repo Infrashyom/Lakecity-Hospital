@@ -2,13 +2,15 @@ import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import { Input } from "@/src/components/ui/Input";
 import { authFetch } from "@/src/lib/authFetch.js";
-import { Building2, Edit, FileText, Plus, X } from "lucide-react";
-import React, { useState } from "react";
+import { Building2, Edit, FileText, Plus, X, ImagePlus, Loader2, Image as ImageIcon } from "lucide-react";
+import React, { useState, useRef } from "react";
 import { toast } from "sonner";
 
 function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boolean; onClose: () => void; onSave: (dept: any) => void; editingDept?: any }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState(editingDept || {
-    name: "", shortDescription: "", 
+    name: "", shortDescription: "", bannerImage: "",
     seoTitle: "", seoDescription: "", seoKeywords: "", status: "ACTIVE"
   });
 
@@ -17,11 +19,36 @@ function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boo
       setFormData({ ...editingDept, status: editingDept.status || "ACTIVE" });
     } else {
       setFormData({
-        name: "", shortDescription: "", 
+        name: "", shortDescription: "", bannerImage: "",
         seoTitle: "", seoDescription: "", seoKeywords: "", status: "ACTIVE"
       });
     }
   }, [editingDept, isOpen]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const uploadData = new FormData();
+    uploadData.append("image", file);
+
+    try {
+      const res = await authFetch("/api/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      setFormData({ ...formData, bannerImage: data.data.url });
+    } catch (err) {
+      console.error("Upload failed", err);
+      toast.error("Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -37,6 +64,40 @@ function DepartmentModal({ isOpen, onClose, onSave, editingDept }: { isOpen: boo
             <div>
               <label className="text-sm font-medium mb-1 block">Department Name <span className="text-danger">*</span></label>
               <Input value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Cardiology" />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Department Image</label>
+              <div className="flex items-center gap-4">
+                {formData.bannerImage ? (
+                  <div className="relative w-32 aspect-[3/2] rounded-lg overflow-hidden border border-slate-200">
+                    <img src={formData.bannerImage} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-32 aspect-[3/2] rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 bg-slate-50">
+                    <ImageIcon className="w-6 h-6" />
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <Button 
+                    variant="outline" 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="gap-2"
+                  >
+                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                  </Button>
+                  <p className="text-xs text-slate-500">Recommended size: 800x600px. Max size 2MB.</p>
+                </div>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Short Description</label>
@@ -153,12 +214,16 @@ export function DepartmentsTab({ departments, doctors, fetchDepartments, fetchDo
                 
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-4">
                   <div className="flex-1 flex gap-4 w-full md:w-auto">
-                    <div className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 text-primary">
-                      <Building2 className="w-8 h-8" />
+                    <div className="w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden shrink-0 bg-slate-100 flex items-center justify-center border border-slate-200">
+                      {dept.bannerImage ? (
+                        <img src={dept.bannerImage} alt={dept.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-slate-300" />
+                      )}
                     </div>
                     <div>
                       <h3 className="font-bold text-lg text-slate-800">{dept.name}</h3>
-                      <p className="text-sm text-slate-500 font-medium w-full max-w-lg mb-2">{dept.shortDescription || 'No description provided.'}</p>
+                      <p className="text-sm text-slate-500 font-medium w-full max-w-lg mb-2 line-clamp-2">{dept.shortDescription || 'No description provided.'}</p>
                       <div className="flex gap-4">
                         {dept.seoTitle && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium">SEO Configured</span>}
                       </div>

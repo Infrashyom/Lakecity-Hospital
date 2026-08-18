@@ -12,7 +12,7 @@ export function DoctorsSection() {
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {
-          const activeDocs = data.filter((doc: any) => doc.status !== "BANNED");
+          const activeDocs = data.filter((doc: any) => doc.status !== "BANNED" && doc.showOnHome === true);
           setDoctors(activeDocs);
         }
       })
@@ -56,6 +56,7 @@ export function DoctorsSection() {
                     <img src={doc.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=e2e8f0&color=64748b&size=400`} alt={doc.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                   <div className="flex-1">
+                    <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-wider mb-2">Director</div>
                     <h3 className="text-xl font-bold text-slate-900 mb-1">{doc.name}</h3>
                     <p className="text-primary font-medium text-sm mb-2">{doc.specialty}</p>
                     <div className="flex items-center gap-1 text-sm text-slate-600 mb-1">
@@ -92,6 +93,7 @@ export function DoctorsSection() {
                     <img src={doc.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.name)}&background=e2e8f0&color=64748b&size=400`} alt={doc.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                   <div className="flex-1">
+                    <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-wider mb-2">Director</div>
                     <h3 className="text-xl font-bold text-slate-900 mb-1">{doc.name}</h3>
                     <p className="text-primary font-medium text-sm mb-2">{doc.specialty}</p>
                     <div className="flex items-center gap-1 text-sm text-slate-600 mb-1">

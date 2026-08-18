@@ -43,12 +43,7 @@ export function Navbar() {
   }, [location.pathname]);
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm py-3" : "bg-transparent py-5"
-      )}
-    >
+    <header className="sticky top-0 left-0 right-0 z-50 bg-white shadow-sm py-3 transition-all duration-300">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -57,8 +52,8 @@ export function Navbar() {
               <img src={settings.logoUrl} alt={hospitalName} className="h-10 object-contain group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" />
             )}
             <div className="flex flex-col ml-1">
-              <span className="text-2xl font-bold text-primary leading-none tracking-tight">Lake City</span>
-              <span className="text-sm font-bold text-secondary tracking-widest uppercase mt-0.5">HOSPITAL</span>
+              <span className="text-2xl font-bold leading-none tracking-tight text-primary">Lake City</span>
+              <span className="text-sm font-bold tracking-widest uppercase mt-0.5 text-secondary">HOSPITAL</span>
             </div>
           </Link>
 
@@ -95,7 +90,7 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="lg:hidden p-2 text-text-main focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md"
+            className="lg:hidden p-2 text-text-main hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-expanded={isMobileMenuOpen}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
@@ -135,12 +130,6 @@ export function Navbar() {
                   <Calendar className="h-4 w-4" aria-hidden="true" />
                   <span>Book Appointment</span>
                 </Button>
-              <a href="tel:1066" className="w-full">
-                <Button variant="danger" className="w-full gap-2 justify-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger">
-                  <Phone className="h-4 w-4" aria-hidden="true" />
-                  <span>Emergency: 1066</span>
-                </Button>
-              </a>
             </nav>
           </motion.div>
         )}

@@ -7,6 +7,7 @@ import { ImageUpload } from "@/src/components/admin/ImageUpload";
 import { DepartmentsTab } from "@/src/components/admin/tabs/DepartmentsTab";
 import { InsurancesTab } from "@/src/components/admin/tabs/InsurancesTab";
 import { MediaGalleryTab } from "@/src/components/admin/tabs/MediaGalleryTab";
+import { MediaManagerTab } from "@/src/components/admin/tabs/MediaManagerTab";
 import { VirtualTourTab } from "@/src/components/admin/tabs/VirtualTourTab";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
@@ -29,7 +30,7 @@ import { useNavigate } from "react-router-dom";
 function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = [] }: { isOpen: boolean; onClose: () => void; onSave: (doc: any) => void; editingDoctor?: any; departments?: any[] }) {
   const [formData, setFormData] = useState({
     name: "", specialty: "", image: "", experience: "", availability: "", bio: "",
-    registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", 
+    registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", showOnHome: false,
     department: "", education: "", affiliations: "", publications: "", expertise: "", awards: "", surgeriesCount: 0
   });
 
@@ -47,6 +48,7 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
         opdTiming: editingDoctor.opdTiming || "",
         languages: (editingDoctor.languages || []).join(", "),
         status: editingDoctor.status || "ACTIVE",
+        showOnHome: editingDoctor.showOnHome || false,
         department: editingDoctor.department || "",
         education: Array.isArray(editingDoctor.education) ? editingDoctor.education.join("\n") : (editingDoctor.education || ""),
         affiliations: Array.isArray(editingDoctor.affiliations) ? editingDoctor.affiliations.join("\n") : (editingDoctor.affiliations || ""),
@@ -58,7 +60,7 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
     } else {
       setFormData({ 
         name: "", specialty: "", image: "", experience: "", availability: "", bio: "",
-        registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", 
+        registrationNumber: "", consultationFees: 500, opdTiming: "", languages: "", status: "ACTIVE", showOnHome: false,
         department: "", education: "", affiliations: "", publications: "", expertise: "", awards: "", surgeriesCount: 0
       });
     }
@@ -120,6 +122,10 @@ function AddDoctorModal({ isOpen, onClose, onSave, editingDoctor, departments = 
               <label className="text-sm font-medium mb-1 block">Availability (Days)</label>
               <Input value={formData.availability} onChange={(e) => setFormData({...formData, availability: e.target.value})} placeholder="Mon, Wed, Fri" />
             </div>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <input type="checkbox" id="showOnHome" checked={formData.showOnHome} onChange={(e) => setFormData({...formData, showOnHome: e.target.checked})} className="rounded text-primary focus:ring-primary" />
+            <label htmlFor="showOnHome" className="text-sm font-medium">Show on Home Page (Will be displayed as Director)</label>
           </div>
           <ImageUpload 
             value={formData.image} 
@@ -502,9 +508,13 @@ export function AdminDashboard() {
         fetchContent();
         setIsBlogModalOpen(false);
         setEditingBlog(null);
+        toast.success("Blog article saved successfully!");
+      } else {
+        toast.error("Failed to save blog article.");
       }
     } catch (error) {
       console.error("Error saving blog:", error);
+      toast.error("An error occurred while saving the blog article.");
     }
   };
 
@@ -818,6 +828,7 @@ export function AdminDashboard() {
                       <h3 className="font-bold text-slate-900 leading-tight mb-1">{doc.name}</h3>
                       <p className="text-xs text-primary font-medium">{doc.specialty}</p>
                       {doc.registrationNumber && <p className="text-[10px] text-slate-400 mt-0.5">Reg: {doc.registrationNumber}</p>}
+                      {doc.showOnHome && <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">Home Page</span>}
                     </div>
                   </div>
                   
@@ -951,7 +962,7 @@ export function AdminDashboard() {
         )}
 
         {activeTab === "media" && (
-          <MediaGalleryTab />
+          <MediaManagerTab />
         )}
 
         {activeTab === "tour" && (

@@ -1,6 +1,6 @@
 import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
-import { ArrowLeft, Calendar, Loader2, User, Tag, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, Loader2, User, Tag, Share2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -10,6 +10,8 @@ export function BlogDetails() {
   const { id } = useParams();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [openIndexLeft, setOpenIndexLeft] = useState<number | null>(null);
+  const [openIndexRight, setOpenIndexRight] = useState<number | null>(null);
 
   const handleShare = async () => {
     try {
@@ -70,6 +72,42 @@ export function BlogDetails() {
       </div>
     );
   }
+
+  const faqs = post.faqs || [];
+  const midPoint = Math.ceil(faqs.length / 2);
+  const leftColumnFaqs = faqs.slice(0, midPoint);
+  const rightColumnFaqs = faqs.slice(midPoint);
+
+  const FAQItem = ({ faq, isOpen, onToggle }: { faq: any, isOpen: boolean, onToggle: () => void }) => (
+    <div 
+      className={`border border-slate-200 rounded-xl overflow-hidden transition-all duration-300 ${isOpen ? 'shadow-md border-[#004b5f]/30 ring-1 ring-[#004b5f]/10' : 'hover:border-slate-300 bg-[#fbfdfd]'}`}
+    >
+      <button
+        className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+      >
+        <span className={`font-semibold pr-8 ${isOpen ? 'text-[#004b5f]' : 'text-slate-900'}`}>{faq.question}</span>
+        {isOpen ? (
+          <div className="w-8 h-8 rounded-full bg-[#004b5f] text-white flex flex-shrink-0 items-center justify-center transition-colors">
+            <ChevronUp className="w-5 h-5" />
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-slate-200/60 text-slate-500 flex flex-shrink-0 items-center justify-center hover:bg-slate-300/60 transition-colors">
+            <ChevronDown className="w-5 h-5" />
+          </div>
+        )}
+      </button>
+      
+      <div 
+        className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
+      >
+        <div className="text-slate-600 border-t border-slate-100 pt-4 leading-relaxed">
+          {faq.answer}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="py-24 bg-white min-h-screen">
@@ -135,10 +173,45 @@ export function BlogDetails() {
               </div>
             )}
 
-            <div className="prose prose-lg prose-slate max-w-none hover:prose-a:text-primary-dark focus:prose-a:text-primary-dark">
+            <div className="prose prose-lg prose-slate max-w-none hover:prose-a:text-primary-dark focus:prose-a:text-primary-dark mb-16">
               {/* For simplicity we will assume content is either markdown or plain text, or html. Just render it for now */}
               <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />
             </div>
+
+            {faqs.length > 0 && (
+              <div className="mt-16 border-t border-slate-100 pt-16">
+                <div className="text-center max-w-2xl mx-auto mb-12">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-4 text-slate-900">Frequently Asked Questions</h2>
+                  <p className="text-slate-600">Answers to common questions related to this article.</p>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4 lg:gap-8 max-w-5xl mx-auto">
+                  {/* Left Column */}
+                  <div className="flex flex-col gap-4">
+                    {leftColumnFaqs.map((faq: any, idx: number) => (
+                      <FAQItem 
+                        key={`left-${idx}`} 
+                        faq={faq} 
+                        isOpen={openIndexLeft === idx}
+                        onToggle={() => setOpenIndexLeft(openIndexLeft === idx ? null : idx)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Right Column */}
+                  <div className="flex flex-col gap-4">
+                    {rightColumnFaqs.map((faq: any, idx: number) => (
+                      <FAQItem 
+                        key={`right-${idx}`} 
+                        faq={faq} 
+                        isOpen={openIndexRight === idx}
+                        onToggle={() => setOpenIndexRight(openIndexRight === idx ? null : idx)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </div>

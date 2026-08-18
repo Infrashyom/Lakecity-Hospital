@@ -15,11 +15,6 @@ export function SettingsTab() {
     logoUrl: "",
     aboutUsImageUrl: "",
     featuredVideos: ["", "", ""],
-    heroCarousel: [
-      { image: "", title: "", description: "" },
-      { image: "", title: "", description: "" },
-      { image: "", title: "", description: "" }
-    ],
     contactNumbers: ["", ""],
     emails: [""],
     address: "",
@@ -60,11 +55,6 @@ export function SettingsTab() {
             data.featuredVideos?.[0] || "",
             data.featuredVideos?.[1] || "",
             data.featuredVideos?.[2] || ""
-          ],
-          heroCarousel: data.heroCarousel?.length === 3 ? data.heroCarousel : [
-            data.heroCarousel?.[0] || { image: "", title: "", description: "" },
-            data.heroCarousel?.[1] || { image: "", title: "", description: "" },
-            data.heroCarousel?.[2] || { image: "", title: "", description: "" }
           ],
           contactNumbers: [
             data.contactNumbers?.[0] || "",
@@ -182,63 +172,6 @@ export function SettingsTab() {
                        )}
                      </div>
                    )}
-                </div>
-                <div className="space-y-4 border border-slate-200 rounded-xl p-4">
-                  <div>
-                    <h4 className="font-bold text-slate-800 text-sm">Hero Carousel (3 Images)</h4>
-                    <p className="text-xs text-slate-500 mt-1">Recommended aspect ratio: 16:9 or 4:3 (e.g., 1280x720 or 800x600).</p>
-                  </div>
-                  {[0, 1, 2].map((idx) => (
-                    <div key={idx} className="border-t border-slate-100 pt-4 mt-4 first:border-0 first:pt-0 first:mt-0">
-                      <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">Slide {idx + 1}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase text-slate-500 block">Image</label>
-                           {editModeGeneral ? (
-                             <ImageUpload 
-                               value={formData.heroCarousel[idx].image}
-                               onChange={(url) => {
-                                 const newCarousel = [...formData.heroCarousel];
-                                 newCarousel[idx].image = url;
-                                 setFormData({...formData, heroCarousel: newCarousel});
-                               }}
-                             />
-                           ) : (
-                             <Input 
-                               value={formData.heroCarousel[idx].image} 
-                               className="bg-slate-50 cursor-not-allowed opacity-70"
-                               disabled
-                               placeholder="No image uploaded"
-                             />
-                           )}
-                           <label className="text-xs font-bold uppercase text-slate-500 block mt-3">Title</label>
-                           <Input 
-                             value={formData.heroCarousel[idx].title} 
-                             onChange={(e) => {
-                               const newCarousel = [...formData.heroCarousel];
-                               newCarousel[idx].title = e.target.value;
-                               setFormData({...formData, heroCarousel: newCarousel});
-                             }} 
-                             className={!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"} 
-                             disabled={!editModeGeneral}
-                           />
-                        </div>
-                        <div>
-                           <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Description</label>
-                           <textarea 
-                             value={formData.heroCarousel[idx].description} 
-                             onChange={(e) => {
-                               const newCarousel = [...formData.heroCarousel];
-                               newCarousel[idx].description = e.target.value;
-                               setFormData({...formData, heroCarousel: newCarousel});
-                             }} 
-                             className={`flex min-h-[105px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${!editModeGeneral ? "bg-slate-50 cursor-not-allowed opacity-70" : "bg-white"}`}
-                             disabled={!editModeGeneral}
-                           />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
                 <div>
                    <label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Hospital Name</label>

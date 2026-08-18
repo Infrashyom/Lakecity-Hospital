@@ -2,12 +2,14 @@ import { SEO } from "@/src/components/SEO";
 import { Card, CardContent } from "@/src/components/ui/Card";
 import {
   Activity,
+  ArrowRight,
   Baby,
   BadgePlus,
   Bone,
   Brain,
   Ear,
   HeartPulse,
+  Image as ImageIcon,
   Microscope,
   ShieldAlert,
   Stethoscope,
@@ -68,27 +70,30 @@ export function Departments() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {departments.length > 0 ? departments.map((dept, i) => {
-              const { icon: Icon, color, bg } = getDepartmentIcon(dept.name);
               return (
                 <motion.div
                   key={dept._id || dept.id || i}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="h-full"
+                  className="h-full flex flex-col rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 bg-[#f8f9fc]"
                 >
-                  <Card className="h-full flex flex-col border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group overflow-hidden bg-white">
-                    <CardContent className="p-8 flex flex-col h-full relative">
-                      <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-50 transition-transform duration-500 group-hover:scale-[2] ${bg}`} aria-hidden="true" />
-                      
-                      <div className={`relative z-10 w-16 h-16 rounded-2xl ${bg} flex items-center justify-center mb-6 shadow-sm border border-white/50 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className={`w-8 h-8 ${color}`} />
+                  {/* Department Image */}
+                  <div className="w-full h-56 bg-slate-200 relative shrink-0">
+                    {dept.bannerImage ? (
+                      <img src={dept.bannerImage} alt={dept.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
+                        <ImageIcon className="w-12 h-12 opacity-50" />
                       </div>
-                      
-                      <h3 className="relative z-10 text-2xl font-bold text-slate-900 mb-3">{dept.name}</h3>
-                      <p className="relative z-10 text-slate-600 mb-8 flex-grow leading-relaxed">{dept.shortDescription || "Specialized care and treatment."}</p>
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
+                  
+                  {/* Department Content */}
+                  <div className="p-8 flex flex-col h-full">
+                    <h3 className="text-2xl font-bold text-[#1e5aa0] mb-4">{dept.name}</h3>
+                    <p className="text-slate-900 flex-grow leading-relaxed font-medium">{dept.shortDescription || "Specialized care and treatment."}</p>
+                  </div>
                 </motion.div>
               );
             }) : (

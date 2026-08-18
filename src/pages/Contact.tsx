@@ -2,11 +2,13 @@ import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
 import { useSettings } from "@/src/contexts/SettingsContext";
+import { useBooking } from "@/src/contexts/BookingContext";
 import { Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import React from "react";
 
 export function Contact() {
   const { settings } = useSettings();
+  const { openBooking } = useBooking();
   const hospitalName = settings?.hospitalName || "Lake City Hospital";
 
   return (

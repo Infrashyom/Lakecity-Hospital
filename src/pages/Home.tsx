@@ -4,6 +4,7 @@ import { YouTubeSection } from "@/src/components/sections/YouTubeSection";
 import { BlogSection } from "@/src/components/sections/BlogSection";
 import { DoctorsSection } from "@/src/components/sections/DoctorsSection";
 import { TestimonialsSection } from "@/src/components/sections/TestimonialsSection";
+import { BannerSlider } from "@/src/components/sections/BannerSlider";
 import { SEO } from "@/src/components/SEO";
 import { Button } from "@/src/components/ui/Button";
 import { Card, CardContent } from "@/src/components/ui/Card";
@@ -21,6 +22,7 @@ import {
   Clock,
   Ear,
   HeartPulse,
+  Image as ImageIcon,
   Microscope,
   Phone,
   ShieldAlert,
@@ -88,114 +90,7 @@ export function Home() {
         24/7 Emergency Services Available. Call 1066 immediately for medical emergencies.
       </div>
 
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden" aria-label="Hero">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1551076805-e18690c5e561?q=80&w=2000&auto=format&fit=crop" 
-            alt="Modern hospital building interior" 
-            className="w-full h-full object-cover opacity-20"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-slate-50/95 to-transparent" />
-        </div>
-
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="max-w-3xl order-2 lg:order-1">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary-dark text-sm font-semibold mb-6">
-                  Welcome to Lake City Caring Partners
-                </span>
-                <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6">
-                  Super Speciality <br />
-                  <span className="text-secondary">Surgical Center</span>
-                </h1>
-                <p className="text-lg text-slate-700 mb-4 max-w-2xl leading-relaxed font-medium">
-                  Advanced Surgical & Medical Care in Bhopal, with Compassion at Every Step
-                </p>
-                <p className="text-base text-slate-600 mb-10 max-w-2xl leading-relaxed font-semibold">
-                  Ayushman Bharat Empanelled Hospital | Cancer Care | Reconstructive Surgery | Pediatric & Neonatal Care
-                </p>
-                
-                <div className="flex flex-wrap gap-4">
-                  <Button size="lg" className="gap-2 h-14 px-8 text-base shadow-xl shadow-primary/20" onClick={() => openBooking()}>
-                      <Calendar className="h-5 w-5" aria-hidden="true" />
-                      Book Appointment
-                    </Button>
-                  <a href="tel:1066" className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-danger rounded-md">
-                    <Button size="lg" variant="danger" className="gap-2 h-14 px-8 text-base shadow-xl shadow-danger/20" aria-label="Call Emergency at 1066">
-                      <Phone className="h-5 w-5" aria-hidden="true" />
-                      Emergency (1066)
-                    </Button>
-                  </a>
-                </div>
-              </motion.div>
-            </div>
-            
-            {heroCarousel.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="w-full relative order-1 lg:order-2"
-              >
-                <div className="relative w-full aspect-[4/3] sm:aspect-video lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentSlide}
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.5 }}
-                      className="absolute inset-0"
-                    >
-                      <img 
-                        src={heroCarousel[currentSlide].image} 
-                        alt={heroCarousel[currentSlide].title || "Carousel image"} 
-                        className="w-full h-full object-cover"
-                      />
-                      {(heroCarousel[currentSlide].title || heroCarousel[currentSlide].description) && (
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 md:p-8">
-                          {heroCarousel[currentSlide].title && (
-                            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
-                              {heroCarousel[currentSlide].title}
-                            </h3>
-                          )}
-                          {heroCarousel[currentSlide].description && (
-                            <p className="text-white/90 text-sm md:text-base max-w-lg leading-relaxed">
-                              {heroCarousel[currentSlide].description}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                  
-                  {heroCarousel.length > 1 && (
-                    <div className="absolute bottom-4 right-4 flex gap-2 z-20">
-                      {heroCarousel.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentSlide(idx)}
-                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                            idx === currentSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
-                          }`}
-                          aria-label={`Go to slide ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </section>
+      <BannerSlider />
 
       {/* About Section */}
       <section className="py-16 bg-white relative overflow-hidden" aria-labelledby="about-hospital">
@@ -265,7 +160,6 @@ export function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {departments.slice(0, 4).map((dept, i) => {
-                const { icon: Icon, color, bg } = getDepartmentIcon(dept.name);
                 return (
                   <motion.div
                     key={dept._id || dept.id || i}
@@ -274,17 +168,22 @@ export function Home() {
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
                   >
-                    <Link to={`/departments`} className="block h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl">
-                      <Card className="h-full border border-slate-200 hover:border-primary/20 shadow-sm hover:shadow-xl transition-all duration-300">
-                        <CardContent className="p-8 flex flex-col items-center text-center h-full text-slate-900 relative overflow-hidden">
-                          <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-50 transition-transform duration-500 group-hover:scale-150 ${bg}`} aria-hidden="true" />
-                          <div className={`relative z-10 w-16 h-16 rounded-2xl ${bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/50 shadow-sm`} aria-hidden="true">
-                            <Icon className={`w-8 h-8 ${color}`} />
-                          </div>
-                          <h3 className="relative z-10 text-xl font-semibold mb-3">{dept.name}</h3>
-                          <p className="relative z-10 text-slate-600 text-sm mb-6 flex-grow">{dept.shortDescription || "Specialized care and treatment."}</p>
-                        </CardContent>
-                      </Card>
+                    <Link to={`/departments`} className="block h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-3xl">
+                      <div className="h-full flex flex-col rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 bg-[#f8f9fc]">
+                        <div className="w-full h-48 bg-slate-200 relative shrink-0">
+                          {dept.bannerImage ? (
+                            <img src={dept.bannerImage} alt={dept.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
+                              <ImageIcon className="w-10 h-10 opacity-50" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-6 flex flex-col h-full">
+                          <h3 className="text-xl font-bold text-[#1e5aa0] mb-3">{dept.name}</h3>
+                          <p className="text-slate-900 text-sm flex-grow leading-relaxed font-medium line-clamp-3">{dept.shortDescription || "Specialized care and treatment."}</p>
+                        </div>
+                      </div>
                     </Link>
                   </motion.div>
                 );
@@ -375,6 +274,7 @@ export function Home() {
             <h2 id="location-heading" className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Visit Our Centre</h2>
             <p className="text-slate-600 text-lg">Accessible location in the heart of the city.</p>
           </div>
+          
           <div className="max-w-5xl mx-auto h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 relative shadow-lg">
              <iframe 
                 src={(settings?.googleMapsLink && settings.googleMapsLink.includes('embed')) ? settings.googleMapsLink : `https://maps.google.com/maps?q=${encodeURIComponent((settings?.hospitalName || "Lake City Hospital") + (settings?.address ? ', ' + settings.address : ''))}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 

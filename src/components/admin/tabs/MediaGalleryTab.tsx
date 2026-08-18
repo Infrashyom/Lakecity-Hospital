@@ -30,6 +30,7 @@ export function MediaGalleryTab() {
 
 
   const [uploadModal, setUploadModal] = useState<{ isOpen: boolean; file: File | null; title: string }>({ isOpen: false, file: null, title: '' });
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; id: string; title: string }>({ isOpen: false, id: '', title: '' });
 
   const fetchMedia = async () => {
     try {
@@ -158,6 +159,28 @@ export function MediaGalleryTab() {
     }
   };
 
+  const processEdit = async () => {
+    if (!editModal.id) return;
+    try {
+      const response = await authFetch(`/api/content/${editModal.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editModal.title }),
+      });
+      if (response.ok) {
+        fetchMedia();
+        toast.success("Title updated successfully.");
+      } else {
+        toast.error("Failed to update title.");
+      }
+    } catch (error) {
+      console.error("Error updating title", error);
+      toast.error("Failed to update title.");
+    } finally {
+      setEditModal({ isOpen: false, id: '', title: '' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <input
@@ -269,6 +292,16 @@ export function MediaGalleryTab() {
                   {/* Hover Actions (Center) */}
                   <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 z-10">
                     <button
+                      title="Edit Title"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditModal({ isOpen: true, id: file._id || file.id, title: file.title || '' });
+                      }}
+                      className="p-3 rounded-full bg-white text-primary hover:bg-slate-50 transition-colors shadow-lg transform hover:scale-110"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                    <button
                       title="View Image"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -331,6 +364,27 @@ export function MediaGalleryTab() {
         </div>
       )}
 
+      {editModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Edit Image Title</h3>
+              <input 
+                type="text" 
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                value={editModal.title} 
+                onChange={e => setEditModal({ ...editModal, title: e.target.value })} 
+                placeholder="Enter new title"
+                autoFocus
+              />
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={() => setEditModal({ isOpen: false, id: '', title: '' })}>Cancel</Button>
+                <Button onClick={processEdit}>Save Changes</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
